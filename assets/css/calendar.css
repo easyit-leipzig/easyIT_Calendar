@@ -1,0 +1,37 @@
+:root { font-family: Inter, system-ui, sans-serif; color: #20242a; background: #f3f5f7; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 980px; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+.app-header { display:flex; align-items:center; justify-content:space-between; gap:2rem; padding:1rem 1.5rem; background:#fff; border-bottom:1px solid #d8dde3; }
+h1 { margin:0; font-size:1.4rem; } .app-header p { margin:.2rem 0 0; color:#65707c; }
+.toolbar { display:flex; align-items:center; gap:.5rem; }
+.toolbar button, .dialog-actions button { border:1px solid #bfc7d0; background:#fff; border-radius:.45rem; padding:.55rem .8rem; }
+#weekLabel { min-width:15rem; text-align:center; }
+.calendar-shell { padding:1rem; }
+.calendar { overflow:auto; max-height:calc(100vh - 105px); background:#fff; border:1px solid #ccd3db; border-radius:.65rem; }
+.calendar-grid { display:grid; grid-template-columns:72px repeat(7, minmax(125px, 1fr)); position:relative; }
+.corner, .day-head { position:sticky; top:0; z-index:5; background:#fff; min-height:64px; border-bottom:1px solid #bfc7d0; }
+.corner { left:0; z-index:6; border-right:1px solid #d8dde3; }
+.day-head { display:flex; flex-direction:column; justify-content:center; align-items:center; border-right:1px solid #d8dde3; }
+.day-head.today { background:#eef7ff; } .day-head span { color:#68737e; font-size:.8rem; }
+.time-label { position:sticky; left:0; z-index:3; height:34px; padding:.15rem .4rem 0 0; text-align:right; font-size:.72rem; color:#69737d; background:#fff; border-right:1px solid #cbd2da; border-bottom:1px solid #e3e7eb; }
+.time-label.half { color:transparent; }
+.slot { height:34px; position:relative; border-right:1px solid #e0e5ea; border-bottom:1px solid #e6eaee; background:#fff; }
+.slot.hour { border-top:1px solid #c7ced6; }
+.slot:hover, .slot:focus { outline:none; background:#edf7ff; }
+.slot.selected { background:#dcefff; }
+.lesson { position:absolute; z-index:4; left:4px; right:4px; top:2px; min-height:30px; padding:.25rem .35rem; border:1px solid #5685b2; border-radius:.4rem; background:#dcecff; overflow:hidden; font-size:.75rem; line-height:1.15; box-shadow:0 1px 3px rgba(0,0,0,.12); cursor:pointer; }
+.lesson strong { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lesson small { display:block; opacity:.75; }
+dialog { width:min(520px, calc(100vw - 2rem)); border:0; border-radius:.7rem; padding:0; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+dialog::backdrop { background:rgba(20,28,36,.45); }
+#lessonForm { padding:1.25rem; display:grid; gap:.85rem; }
+#lessonForm h2 { margin:0 0 .3rem; }
+#lessonForm label { display:grid; gap:.3rem; font-weight:600; }
+#lessonForm input, #lessonForm textarea { width:100%; border:1px solid #bbc4ce; border-radius:.4rem; padding:.55rem; font-weight:400; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+.dialog-actions { display:grid; grid-template-columns:auto 1fr auto auto; gap:.5rem; align-items:center; margin-top:.35rem; }
+.primary { background:#1769aa !important; color:#fff; border-color:#1769aa !important; }
+.danger { color:#a31818; border-color:#d7a7a7 !important; }
+.error { min-height:1.2em; margin:0; color:#b00020; }

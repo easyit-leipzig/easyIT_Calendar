@@ -35,3 +35,115 @@ dialog::backdrop { background:rgba(20,28,36,.45); }
 .primary { background:#1769aa !important; color:#fff; border-color:#1769aa !important; }
 .danger { color:#a31818; border-color:#d7a7a7 !important; }
 .error { min-height:1.2em; margin:0; color:#b00020; }
+.calendar-status { margin:0 0 .65rem; min-height:1.35rem; padding:.55rem .75rem; border-radius:.45rem; font-size:.86rem; }
+.calendar-status.info { background:#eef4f8; color:#3d5366; }
+.calendar-status.success { background:#e8f6ec; color:#215f31; }
+.calendar-status.error { background:#fdecec; color:#8a2020; }
+.lesson[draggable="true"] { cursor:grab; }
+.lesson.dragging { opacity:.45; cursor:grabbing; box-shadow:none; }
+.slot.drop-target { background:#d5edff; outline:2px solid #1769aa; outline-offset:-2px; }
+
+/* Versetzte Darstellung zeitlich überlappender Termine */
+.lesson.overlapping {
+  z-index: 4;
+  padding: .22rem .28rem;
+  border-width: 1px;
+}
+.lesson.overlapping:hover,
+.lesson.overlapping:focus {
+  z-index: 8;
+  min-width: 112px;
+  overflow: visible;
+  box-shadow: 0 4px 12px rgba(0,0,0,.22);
+}
+.lesson-time,
+.lesson-description {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.lesson-description {
+  margin-top: .12rem;
+  opacity: .88 !important;
+}
+.form-row.three-columns { grid-template-columns: repeat(3, 1fr); }
+#lessonForm .checkbox-label { display:flex; grid-template-columns:none; flex-direction:row; align-items:center; gap:.55rem; }
+#lessonForm .checkbox-label input { width:auto; }
+.lesson.inactive { opacity:.58; border-style:dashed; }
+
+/* Rechtsklick-Blockierungen: eigenständige Zeitbereiche, keine Termine */
+.slot.blocked {
+  background: repeating-linear-gradient(
+    135deg,
+    #f4d7d7 0,
+    #f4d7d7 8px,
+    #edc4c4 8px,
+    #edc4c4 16px
+  );
+  box-shadow: inset 0 0 0 1px #c97979;
+  cursor: not-allowed;
+}
+.slot.blocked:hover,
+.slot.blocked:focus {
+  background: repeating-linear-gradient(
+    135deg,
+    #efcccc 0,
+    #efcccc 8px,
+    #e7b7b7 8px,
+    #e7b7b7 16px
+  );
+  outline: 2px solid #a84b4b;
+  outline-offset: -2px;
+}
+.slot.blocked.drop-target { outline: none; }
+
+/* Strg + Rechtsziehen: Vorschau für zusammenhängende Sperrbereiche */
+.slot.block-range-preview {
+  position: relative;
+  z-index: 2;
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+.slot.block-preview-add {
+  color: #8f2f2f;
+  background: repeating-linear-gradient(135deg, #f1bebe 0, #f1bebe 7px, #df9292 7px, #df9292 14px);
+}
+.slot.block-preview-remove {
+  color: #21663a;
+  background: repeating-linear-gradient(135deg, #cfead7 0, #cfead7 7px, #a9d7b6 7px, #a9d7b6 14px);
+  cursor: grabbing;
+}
+
+
+/* Umschaltung Wochen-/Monatsansicht */
+.view-switch { display:flex; gap:.25rem; margin-right:.35rem; }
+.view-switch button.active { background:#1769aa; color:#fff; border-color:#1769aa; }
+.calendar-grid.week-grid { grid-template-columns:72px repeat(7, minmax(125px, 1fr)); }
+.calendar-grid.month-grid { grid-template-columns:repeat(7, minmax(140px, 1fr)); align-items:stretch; min-width:980px; }
+.month-weekday { position:sticky; top:0; z-index:5; padding:.65rem; text-align:center; font-weight:700; background:#fff; border-right:1px solid #d8dde3; border-bottom:1px solid #bfc7d0; }
+.month-day { min-height:150px; padding:.45rem; background:#fff; border-right:1px solid #dfe4e9; border-bottom:1px solid #dfe4e9; overflow:hidden; }
+.month-day.outside { background:#f7f8f9; color:#8b949d; }
+.month-day.today { box-shadow:inset 0 0 0 2px #1769aa; background:#f3f9ff; }
+.month-day-number { display:flex; justify-content:flex-end; min-height:1.5rem; font-weight:700; }
+.month-lessons { display:grid; gap:.28rem; }
+.month-lesson { display:grid; gap:.08rem; padding:.3rem .38rem; border:1px solid #7da4c9; border-radius:.35rem; background:#e5f1ff; font-size:.72rem; line-height:1.2; overflow:hidden; cursor:default; user-select:text; }
+.month-lesson time { font-weight:700; color:#345c7e; }
+.month-lesson strong, .month-lesson span { white-space:normal; overflow-wrap:anywhere; }
+.month-lesson.inactive { opacity:.55; border-style:dashed; }
+
+/* Tagesansicht: gleiche Interaktion wie die Wochenansicht, aber nur eine Tagesspalte */
+.calendar-grid.day-grid { grid-template-columns:72px minmax(500px, 1fr); min-width:720px; }
+.calendar-grid.day-grid .day-head { align-items:flex-start; padding-left:1rem; }
+.calendar-grid.day-grid .lesson { font-size:.8rem; }
+
+
+/* Integriertes Hilfefenster */
+.help-button { font-weight:700; }
+.help-dialog { width:min(980px, calc(100vw - 2rem)); height:min(780px, calc(100vh - 2rem)); padding:0; overflow:hidden; }
+.help-dialog-shell { height:100%; display:grid; grid-template-rows:auto 1fr; background:#fff; }
+.help-dialog-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.85rem 1rem; border-bottom:1px solid #d8dde3; background:#f8fafc; }
+.help-dialog-header h2 { margin:0; font-size:1.15rem; }
+.help-dialog-header p { margin:.15rem 0 0; color:#65707c; font-size:.82rem; }
+#closeHelp { width:2.35rem; height:2.35rem; padding:0; border:1px solid #bfc7d0; border-radius:.45rem; background:#fff; font-size:1.5rem; line-height:1; }
+#helpFrame { width:100%; height:100%; border:0; background:#fff; }
+@media (max-width: 1100px) { .app-header { align-items:flex-start; flex-direction:column; } .toolbar { flex-wrap:wrap; } }

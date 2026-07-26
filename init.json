@@ -1,0 +1,44 @@
+{
+  "application": {
+    "name": "easyIT Calendar",
+    "locale": "de-DE",
+    "timezone": "Europe/Stockholm"
+  },
+  "user": {
+    "id": 1,
+    "role_id": 1,
+    "tutor_id": 1,
+    "student_id": 0
+  },
+  "views": {
+    "default": "week",
+    "day": true,
+    "week": true,
+    "month": true
+  },
+  "rights": {
+    "lesson_read": true,
+    "lesson_create": true,
+    "lesson_edit": true,
+    "lesson_delete": true,
+    "lesson_move": true,
+    "block_read": true,
+    "block_create": true,
+    "block_delete": true,
+    "help_read": true
+  },
+  "features": {
+    "drag_drop": true,
+    "overlaps": true,
+    "blocked_slots": true,
+    "block_range_drag": true,
+    "help": true,
+    "completion_events": true
+  },
+  "calendar": {
+    "slot_minutes": 30,
+    "hour_start": 7,
+    "hour_end": 22,
+    "snap_radius_px": 5
+  }
+}

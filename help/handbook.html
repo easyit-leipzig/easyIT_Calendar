@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Handbuch – easyIT Calendar und init.json</title>
+  <link rel="stylesheet" href="help.css">
+  <link rel="stylesheet" href="handbook.css">
+</head>
+<body>
+<main class="help-page">
+  <header class="hero">
+    <h1>Handbuch zum easyIT Calendar</h1>
+    <p>Installation, Initialisierung, Rechte, Ansichten, Funktionen und Fehlerbehebung.</p>
+    <nav class="nav" aria-label="Hilfenavigation">
+      <a href="day.html">Tag</a><a href="week.html">Woche</a><a href="month.html">Monat</a><a href="handbook.html" aria-current="page">Handbuch</a><a href="admin-handbook.html">Administration</a><a href="index.html">Übersicht</a>
+    </nav>
+  </header>
+
+  <div class="manual-layout">
+    <aside class="manual-toc" aria-label="Inhaltsverzeichnis">
+      <strong>Inhalt</strong>
+      <a href="#start">1. Start und Installation</a>
+      <a href="#ablauf">2. Startablauf</a>
+      <a href="#struktur">3. Projektstruktur</a>
+      <a href="#init">4. init.json</a>
+      <a href="#rechte">5. Rechte</a>
+      <a href="#ansichten">6. Ansichten</a>
+      <a href="#funktionen">7. Funktionsschalter</a>
+      <a href="#kalender">8. Kalendereinstellungen</a>
+      <a href="#profile">9. Rollenprofile</a>
+      <a href="#termine">10. Terminmodell</a>
+      <a href="#blockierungen">11. Blockierungen</a>
+      <a href="#ereignisse">12. Abschlussereignisse</a>
+      <a href="#fehler">13. Fehlerbehebung</a>
+      <a href="#sicherheit">14. Sicherheit</a>
+    </aside>
+
+    <div class="manual-content">
+      <section id="start">
+        <h2>1. Start und Installation</h2>
+        <p>Der Kalender muss über einen Webserver geladen werden, weil der Browser die Datei <span class="inline-code">init.json</span> per <span class="inline-code">fetch()</span> einliest. Ein direkter Aufruf über <span class="inline-code">file://</span> kann durch Browser-Sicherheitsregeln scheitern.</p>
+        <ol class="workflow">
+          <li>Den Ordner <strong>easyIT_Calendar</strong> in das Webverzeichnis kopieren, zum Beispiel nach <span class="inline-code">C:\xampp\htdocs\easyIT_Calendar</span>.</li>
+          <li>Apache in XAMPP starten.</li>
+          <li>Im Browser <span class="inline-code">http://localhost/easyIT_Calendar/</span> öffnen.</li>
+          <li>Bei Bedarf zuerst <span class="inline-code">init.json</span> an Benutzerrolle und Einsatzfall anpassen.</li>
+        </ol>
+      </section>
+
+      <section id="ablauf">
+        <h2>2. Startablauf</h2>
+        <p>Die Initialisierung erfolgt bewusst vor dem Laden der eigentlichen Kalenderlogik:</p>
+        <ol>
+          <li><span class="inline-code">assets/js/bootstrap.js</span> lädt <span class="inline-code">init.json</span> ohne Browser-Cache.</li>
+          <li>Die Pflichtbereiche <span class="inline-code">views</span>, <span class="inline-code">rights</span>, <span class="inline-code">features</span> und <span class="inline-code">calendar</span> werden geprüft.</li>
+          <li>Die Standardansicht muss <span class="inline-code">day</span>, <span class="inline-code">week</span> oder <span class="inline-code">month</span> sein und zugleich freigeschaltet sein.</li>
+          <li>Erst bei erfolgreicher Prüfung wird <span class="inline-code">assets/js/calendar.js</span> nachgeladen.</li>
+        </ol>
+        <p class="warning note">Fehlt die Datei oder enthält sie ungültiges JSON, startet der Kalender absichtlich nicht.</p>
+      </section>
+
+      <section id="struktur">
+        <h2>3. Projektstruktur</h2>
+        <table>
+          <tr><th>Pfad</th><th>Aufgabe</th></tr>
+          <tr><td><span class="inline-code">index.html</span></td><td>Kalenderoberfläche und Dialoge.</td></tr>
+          <tr><td><span class="inline-code">init.json</span></td><td>Initiale Rechte, Ansichten, Benutzerwerte und Kalendereinstellungen.</td></tr>
+          <tr><td><span class="inline-code">assets/js/bootstrap.js</span></td><td>Lädt und validiert die Initialisierung.</td></tr>
+          <tr><td><span class="inline-code">assets/js/calendar.js</span></td><td>Kalenderfunktionen, Ansichten, Termine, Drag-and-drop und Blockierungen.</td></tr>
+          <tr><td><span class="inline-code">help/</span></td><td>HTML/CSS-Hilfe und dieses Handbuch.</td></tr>
+          <tr><td><span class="inline-code">docs/</span></td><td>Technische Markdown-Dokumentation.</td></tr>
+        </table>
+      </section>
+
+      <section id="init">
+        <h2>4. Vollständige init.json</h2>
+        <pre class="code-block">{
+  "application": {
+    "name": "easyIT Calendar",
+    "locale": "de-DE",
+    "timezone": "Europe/Stockholm"
+  },
+  "user": {
+    "id": 1,
+    "role_id": 1,
+    "tutor_id": 1,
+    "student_id": 0
+  },
+  "views": {
+    "default": "week",
+    "day": true,
+    "week": true,
+    "month": true
+  },
+  "rights": {
+    "lesson_read": true,
+    "lesson_create": true,
+    "lesson_edit": true,
+    "lesson_delete": true,
+    "lesson_move": true,
+    "block_read": true,
+    "block_create": true,
+    "block_delete": true,
+    "help_read": true
+  },
+  "features": {
+    "drag_drop": true,
+    "overlaps": true,
+    "blocked_slots": true,
+    "block_range_drag": true,
+    "help": true,
+    "completion_events": true
+  },
+  "calendar": {
+    "slot_minutes": 30,
+    "hour_start": 7,
+    "hour_end": 22,
+    "snap_radius_px": 5
+  }
+}</pre>
+
+        <h3>Bereichsreferenz</h3>
+        <table class="reference-table">
+          <tr><th>Bereich</th><th>Typ</th><th>Bedeutung</th></tr>
+          <tr><td>application</td><td>Objekt</td><td>Anwendungsname, Sprache und Zeitzone.</td></tr>
+          <tr><td>user</td><td>Objekt</td><td>Initiale Benutzer-, Rollen-, Tutor- und Studentenbezüge.</td></tr>
+          <tr><td>views</td><td>Objekt</td><td>Freigegebene Ansichten und Startansicht.</td></tr>
+          <tr><td>rights</td><td>Objekt</td><td>Erlaubte Benutzeraktionen.</td></tr>
+          <tr><td>features</td><td>Objekt</td><td>Globale technische Funktionsschalter.</td></tr>
+          <tr><td>calendar</td><td>Objekt</td><td>Raster, sichtbare Stunden und Snap-Radius.</td></tr>
+        </table>
+      </section>
+
+      <section id="rechte">
+        <h2>5. Rechte</h2>
+        <table class="reference-table">
+          <tr><th>Schlüssel</th><th>Typ</th><th>Wirkung bei true</th></tr>
+          <tr><td>lesson_read</td><td>Boolean</td><td>Termine dürfen dargestellt werden.</td></tr>
+          <tr><td>lesson_create</td><td>Boolean</td><td>Neue Termine dürfen angelegt werden.</td></tr>
+          <tr><td>lesson_edit</td><td>Boolean</td><td>Bestehende Termine dürfen bearbeitet werden.</td></tr>
+          <tr><td>lesson_delete</td><td>Boolean</td><td>Termine dürfen gelöscht werden.</td></tr>
+          <tr><td>lesson_move</td><td>Boolean</td><td>Termine dürfen per Drag-and-drop verschoben werden.</td></tr>
+          <tr><td>block_read</td><td>Boolean</td><td>Blockierte Zeitbereiche werden angezeigt.</td></tr>
+          <tr><td>block_create</td><td>Boolean</td><td>Freie Slots dürfen blockiert werden.</td></tr>
+          <tr><td>block_delete</td><td>Boolean</td><td>Blockierungen dürfen aufgehoben werden.</td></tr>
+          <tr><td>help_read</td><td>Boolean</td><td>Der Hilfezugriff ist verfügbar.</td></tr>
+        </table>
+        <p class="note">Ein Recht und der zugehörige Funktionsschalter müssen gemeinsam aktiv sein. Beispiel: Drag-and-drop benötigt <span class="inline-code">rights.lesson_move</span> und <span class="inline-code">features.drag_drop</span>.</p>
+      </section>
+
+      <section id="ansichten">
+        <h2>6. Ansichten</h2>
+        <table class="reference-table">
+          <tr><th>Schlüssel</th><th>Werte</th><th>Bedeutung</th></tr>
+          <tr><td>default</td><td>day | week | month</td><td>Ansicht direkt nach dem Start.</td></tr>
+          <tr><td>day</td><td>true | false</td><td>Tagesansicht ein- oder ausblenden.</td></tr>
+          <tr><td>week</td><td>true | false</td><td>Wochenansicht ein- oder ausblenden.</td></tr>
+          <tr><td>month</td><td>true | false</td><td>Monatsansicht ein- oder ausblenden.</td></tr>
+        </table>
+        <p>Die Tages- und Wochenansicht können alle freigegebenen Bearbeitungsfunktionen enthalten. Die Monatsansicht bleibt eine reine Darstellungsansicht ohne Drag-and-drop.</p>
+      </section>
+
+      <section id="funktionen">
+        <h2>7. Funktionsschalter</h2>
+        <table class="reference-table">
+          <tr><th>Schlüssel</th><th>Typ</th><th>Funktion</th></tr>
+          <tr><td>drag_drop</td><td>Boolean</td><td>Aktiviert die technische Drag-and-drop-Funktion.</td></tr>
+          <tr><td>overlaps</td><td>Boolean</td><td>Erlaubt und versetzt zeitlich überlagerte Termine.</td></tr>
+          <tr><td>blocked_slots</td><td>Boolean</td><td>Aktiviert blockierbare Zeitbereiche.</td></tr>
+          <tr><td>block_range_drag</td><td>Boolean</td><td>Erlaubt Strg + Rechtsziehen über mehrere Slots.</td></tr>
+          <tr><td>help</td><td>Boolean</td><td>Aktiviert das HTML/CSS-Hilfesystem.</td></tr>
+          <tr><td>completion_events</td><td>Boolean</td><td>Aktiviert Abschlussereignisse nach Änderungen.</td></tr>
+        </table>
+      </section>
+
+      <section id="kalender">
+        <h2>8. Kalendereinstellungen</h2>
+        <table class="reference-table">
+          <tr><th>Schlüssel</th><th>Typ</th><th>Beschreibung</th></tr>
+          <tr><td>slot_minutes</td><td>Integer</td><td>Rastergröße in Minuten. Der aktuelle Aufbau ist für 30 Minuten vorgesehen.</td></tr>
+          <tr><td>hour_start</td><td>Integer</td><td>Erste sichtbare volle Stunde.</td></tr>
+          <tr><td>hour_end</td><td>Integer</td><td>Ende des sichtbaren Zeitraums.</td></tr>
+          <tr><td>snap_radius_px</td><td>Integer</td><td>Fangradius der linken Terminkante beim Verschieben.</td></tr>
+        </table>
+        <p class="note">Bei <span class="inline-code">snap_radius_px: 5</span> reicht es, die linke Kante des Termins bis auf fünf Pixel an den Zielslot zu führen.</p>
+      </section>
+
+      <section id="profile">
+        <h2>9. Beispielprofile</h2>
+        <h3>Administrator</h3>
+        <pre class="code-block">"rights": {
+  "lesson_read": true,
+  "lesson_create": true,
+  "lesson_edit": true,
+  "lesson_delete": true,
+  "lesson_move": true,
+  "block_read": true,
+  "block_create": true,
+  "block_delete": true,
+  "help_read": true
+}</pre>
+        <h3>Tutor ohne Löschrecht</h3>
+        <pre class="code-block">"rights": {
+  "lesson_read": true,
+  "lesson_create": true,
+  "lesson_edit": true,
+  "lesson_delete": false,
+  "lesson_move": true,
+  "block_read": true,
+  "block_create": true,
+  "block_delete": false,
+  "help_read": true
+}</pre>
+        <h3>Reine Monatsübersicht</h3>
+        <pre class="code-block">"views": {
+  "default": "month",
+  "day": false,
+  "week": false,
+  "month": true
+},
+"rights": {
+  "lesson_read": true,
+  "lesson_create": false,
+  "lesson_edit": false,
+  "lesson_delete": false,
+  "lesson_move": false,
+  "block_read": false,
+  "block_create": false,
+  "block_delete": false,
+  "help_read": true
+}</pre>
+      </section>
+
+      <section id="termine">
+        <h2>10. Terminmodell</h2>
+        <pre class="code-block">{
+  "id": 1,
+  "to_role": 2,
+  "to_tutor": 7,
+  "to_student": 15,
+  "start": "2026-07-27T09:00:00",
+  "end": "2026-07-27T10:30:00",
+  "activ": true,
+  "thema": "Lineare Gleichungssysteme",
+  "description": "Wiederholung und Übungsaufgaben",
+  "appendizies": ["arbeitsblatt.pdf", "loesungen.pdf"]
+}</pre>
+        <p>Beim Verschieben werden ausschließlich <span class="inline-code">start</span> und <span class="inline-code">end</span> geändert. Die ursprüngliche Dauer und alle übrigen Felder bleiben erhalten.</p>
+      </section>
+
+      <section id="blockierungen">
+        <h2>11. Blockierte Zeitbereiche</h2>
+        <p>Blockierungen werden getrennt von Terminen gespeichert. Sie erzeugen kein Terminobjekt.</p>
+        <table>
+          <tr><th>Bedienung</th><th>Ergebnis</th></tr>
+          <tr><td><kbd>Strg</kbd> + Rechtsklick</td><td>Einen 30-Minuten-Slot blockieren oder freigeben.</td></tr>
+          <tr><td><kbd>Strg</kbd> + rechte Maustaste ziehen</td><td>Zusammenhängenden Bereich desselben Tages bearbeiten.</td></tr>
+          <tr><td>Normaler Rechtsklick</td><td>Browser-Kontextmenü bleibt erhalten.</td></tr>
+        </table>
+      </section>
+
+      <section id="ereignisse">
+        <h2>12. Abschlussereignisse</h2>
+        <p>Bei aktivem Funktionsschalter <span class="inline-code">completion_events</span> werden nach erfolgreichen Aktionen DOM-Ereignisse ausgelöst. Dazu gehören insbesondere Terminverschiebungen und Änderungen an Blockierungen.</p>
+        <pre class="code-block">document.addEventListener(
+  'tinycalendar:lesson-move-completed',
+  function (event) {
+    console.log(event.detail);
+  }
+);</pre>
+        <p>Weitere verfügbare Ereignisse sind <span class="inline-code">tinycalendar:block-changed</span> und <span class="inline-code">tinycalendar:block-range-changed</span>.</p>
+      </section>
+
+      <section id="fehler">
+        <h2>13. Fehlerbehebung</h2>
+        <table>
+          <tr><th>Meldung oder Symptom</th><th>Prüfung</th></tr>
+          <tr><td>init.json konnte nicht geladen werden</td><td>Über Webserver statt per file:// öffnen; Dateiname und Pfad prüfen.</td></tr>
+          <tr><td>Ungültiges JSON</td><td>Kommas, Anführungszeichen und schließende Klammern kontrollieren. JSON erlaubt keine Kommentare.</td></tr>
+          <tr><td>Standardansicht deaktiviert</td><td>Den Wert aus <span class="inline-code">views.default</span> auf true setzen.</td></tr>
+          <tr><td>Schaltfläche fehlt</td><td>Ansichtsfreigabe, Recht und Funktionsschalter gemeinsam kontrollieren.</td></tr>
+          <tr><td>Drag-and-drop funktioniert nicht</td><td><span class="inline-code">lesson_move</span> und <span class="inline-code">drag_drop</span> müssen true sein; Monatsansicht unterstützt kein Verschieben.</td></tr>
+          <tr><td>Blockieren funktioniert nicht</td><td><span class="inline-code">blocked_slots</span> sowie das passende Erstell- oder Löschrecht prüfen.</td></tr>
+          <tr><td>Änderung an init.json erscheint nicht</td><td>Seite vollständig neu laden. bootstrap.js fordert die JSON-Datei mit <span class="inline-code">cache: no-store</span> an.</td></tr>
+        </table>
+      </section>
+
+      <section id="sicherheit">
+        <h2>14. Sicherheit und produktiver Betrieb</h2>
+        <p class="warning note">Die clientseitige init.json steuert die Oberfläche, ersetzt aber keine serverseitige Rechteprüfung.</p>
+        <ul class="checklist">
+          <li>In einer produktiven Anwendung Rechte zusätzlich im PHP-/API-Backend prüfen.</li>
+          <li>Benutzer- und Rollenwerte nicht ungeprüft aus dem Browser übernehmen.</li>
+          <li>Schreibende API-Aufrufe mit Sessionprüfung und CSRF-Schutz absichern.</li>
+          <li>Dateinamen aus <span class="inline-code">appendizies</span> serverseitig validieren.</li>
+          <li>Termindaten vor dem Speichern typisieren und Datumsbereiche validieren.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+  <p class="footer">easyIT Calendar – HTML-Handbuch zur Initialisierung und Bedienung</p>
+</main>
+</body>
+</html>

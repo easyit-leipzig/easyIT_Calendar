@@ -1,0 +1,28 @@
+
+:root { font-family: Inter, system-ui, sans-serif; color:#20242a; background:#fff; line-height:1.55; }
+* { box-sizing:border-box; }
+body { margin:0; }
+a { color:#1769aa; }
+.help-page { max-width:920px; margin:0 auto; padding:1.25rem 1.4rem 2.5rem; }
+.hero { padding:1.1rem 1.2rem; border:1px solid #cbd7e2; border-radius:.75rem; background:#f2f8fd; }
+.hero h1 { margin:0; font-size:1.55rem; }
+.hero p { margin:.35rem 0 0; color:#536474; }
+h2 { margin:1.6rem 0 .55rem; font-size:1.15rem; border-bottom:1px solid #e0e5ea; padding-bottom:.3rem; }
+h3 { margin:1rem 0 .35rem; font-size:1rem; }
+p { margin:.45rem 0; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:.75rem; margin-top:.9rem; }
+.card { padding:.85rem; border:1px solid #d8dde3; border-radius:.65rem; background:#fff; }
+.card strong { display:block; margin-bottom:.2rem; }
+table { width:100%; border-collapse:collapse; margin:.65rem 0; }
+th,td { padding:.55rem .65rem; border:1px solid #d8dde3; text-align:left; vertical-align:top; }
+th { background:#f4f6f8; }
+kbd { display:inline-block; min-width:1.7em; padding:.08rem .34rem; border:1px solid #aeb7c1; border-bottom-width:2px; border-radius:.3rem; background:#f8f9fa; font:inherit; font-size:.86em; text-align:center; }
+.note { padding:.7rem .8rem; border-left:4px solid #1769aa; background:#eef6fc; }
+.warning { border-left-color:#a84b4b; background:#fbeeee; }
+.workflow { counter-reset:step; display:grid; gap:.55rem; padding:0; list-style:none; }
+.workflow li { position:relative; padding:.65rem .7rem .65rem 2.7rem; border:1px solid #d8dde3; border-radius:.55rem; }
+.workflow li::before { counter-increment:step; content:counter(step); position:absolute; left:.7rem; top:.62rem; width:1.35rem; height:1.35rem; display:grid; place-items:center; border-radius:50%; background:#1769aa; color:#fff; font-size:.78rem; font-weight:700; }
+.nav { display:flex; flex-wrap:wrap; gap:.45rem; margin-top:.8rem; }
+.nav a { padding:.38rem .6rem; border:1px solid #bfc7d0; border-radius:.4rem; text-decoration:none; background:#fff; }
+.footer { margin-top:2rem; color:#6b7681; font-size:.82rem; }
+@media (max-width:600px) { .help-page { padding:1rem; } table { font-size:.9rem; } th,td { padding:.4rem; } }

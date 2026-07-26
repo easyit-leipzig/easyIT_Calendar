@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Administrationshandbuch – easyIT Calendar</title>
+  <link rel="stylesheet" href="help.css">
+  <link rel="stylesheet" href="handbook.css">
+  <link rel="stylesheet" href="admin-handbook.css">
+</head>
+<body>
+<main class="help-page">
+  <header class="hero">
+    <h1>Administrationshandbuch</h1>
+    <p>Ausführliche Verwaltung des easyIT Calendar mit <strong>main_settings</strong>, <strong>init.json</strong>, Rechten, Ansichten und Funktionsschaltern.</p>
+    <div class="admin-hero-meta"><span>MariaDB 10.4</span><span>PHP 8.2 vorbereitet</span><span>Vanilla JavaScript</span><span>kein jQuery</span></div>
+    <nav class="nav" aria-label="Hilfenavigation">
+      <a href="day.html">Tag</a><a href="week.html">Woche</a><a href="month.html">Monat</a><a href="handbook.html">Benutzerhandbuch</a><a href="admin-handbook.html" aria-current="page">Administration</a><a href="index.html">Übersicht</a>
+    </nav>
+  </header>
+
+  <div class="admin-summary">
+    <article><strong>10</strong><span>Einstellungsgruppen</span></article>
+    <article><strong>6</strong><span>unterstützte Werttypen</span></article>
+    <article><strong>9</strong><span>Kalenderrechte</span></article>
+    <article><strong>3</strong><span>steuerbare Ansichten</span></article>
+  </div>
+
+  <div class="manual-layout">
+    <aside class="manual-toc" aria-label="Inhaltsverzeichnis">
+      <strong>Administration</strong>
+      <a href="#ziel">1. Ziel und Zuständigkeit</a>
+      <a href="#installation">2. Installation</a>
+      <a href="#tabelle">3. main_settings</a>
+      <a href="#datentypen">4. Datentypen</a>
+      <a href="#gruppen">5. Einstellungsgruppen</a>
+      <a href="#rechte">6. Rechteverwaltung</a>
+      <a href="#ansichten">7. Ansichten</a>
+      <a href="#funktionen">8. Funktionen</a>
+      <a href="#pflege">9. Einstellungen pflegen</a>
+      <a href="#validierung">10. Validierung</a>
+      <a href="#init">11. init.json erzeugen</a>
+      <a href="#profile">12. Rollenprofile</a>
+      <a href="#sicherung">13. Sicherung</a>
+      <a href="#fehler">14. Fehlerdiagnose</a>
+      <a href="#sicherheit">15. Sicherheit</a>
+      <a href="#checklisten">16. Checklisten</a>
+      <a href="#faq">17. FAQ</a>
+    </aside>
+
+    <div class="manual-content">
+      <section id="ziel">
+        <h2>1. Ziel und Zuständigkeit</h2>
+        <p>Dieses Handbuch richtet sich an Administratoren, die den Kalender installieren, konfigurieren, freigeben und warten. Die Tabelle <span class="inline-code">main_settings</span> bildet die zentrale Quelle für globale Kalendereinstellungen. Die Datei <span class="inline-code">init.json</span> ist die Initialisierung, die der Browser beim Start tatsächlich lädt.</p>
+        <div class="admin-callout"><strong>Grundsatz:</strong> Die Datenbank ist die administrative Quelle. Die für einen konkreten Benutzer ausgelieferte <span class="inline-code">init.json</span> oder API-Antwort ist das daraus abgeleitete Laufzeitprofil.</div>
+      </section>
+
+      <section id="installation">
+        <h2>2. Installation der Einstellungstabelle</h2>
+        <ol class="admin-steps">
+          <li>Datenbank in phpMyAdmin oder einem SQL-Client auswählen.</li>
+          <li>Die Datei <span class="inline-code">sql/main_settings.sql</span> importieren.</li>
+          <li>Prüfen, ob die Tabelle <span class="inline-code">main_settings</span> angelegt wurde.</li>
+          <li>Die Kontrollabfrage am Ende des Skripts ausführen.</li>
+          <li>Den Kalender zunächst mit den mitgelieferten Standardwerten testen.</li>
+        </ol>
+        <pre class="code-block">SELECT COUNT(*) AS settings_count FROM main_settings;
+SELECT * FROM main_settings ORDER BY setting_group, setting_key;</pre>
+        <p class="admin-callout success">Das SQL-Skript kann erneut importiert werden. Vorhandene Schlüssel werden über den eindeutigen Schlüssel aus Gruppe und Name aktualisiert, aber nicht doppelt angelegt.</p>
+      </section>
+
+      <section id="tabelle">
+        <h2>3. Aufbau der Tabelle main_settings</h2>
+        <table class="admin-table">
+          <tr><th>Feld</th><th>Typ</th><th>Aufgabe</th></tr>
+          <tr><td>setting_id</td><td>INT UNSIGNED</td><td>Interne, automatisch vergebene Primär-ID.</td></tr>
+          <tr><td>setting_group</td><td>VARCHAR(50)</td><td>Fachliche Gruppe, zum Beispiel <span class="inline-code">rights</span> oder <span class="inline-code">calendar</span>.</td></tr>
+          <tr><td>setting_key</td><td>VARCHAR(100)</td><td>Eindeutiger Schlüssel innerhalb der Gruppe.</td></tr>
+          <tr><td>setting_value</td><td>LONGTEXT</td><td>Gespeicherter Rohwert. Die Interpretation erfolgt über <span class="inline-code">value_type</span>.</td></tr>
+          <tr><td>value_type</td><td>ENUM</td><td>Definiert, ob der Wert als Text, Zahl, Boolean, JSON oder Datum gelesen wird.</td></tr>
+          <tr><td>description</td><td>TEXT</td><td>Verständliche Beschreibung für die Adminoberfläche.</td></tr>
+          <tr><td>editable</td><td>TINYINT(1)</td><td>Legt fest, ob der Wert regulär bearbeitet werden darf.</td></tr>
+          <tr><td>created_at</td><td>DATETIME</td><td>Zeitpunkt der Anlage.</td></tr>
+          <tr><td>updated_at</td><td>DATETIME</td><td>Wird bei Änderungen automatisch aktualisiert.</td></tr>
+        </table>
+        <p>Der eindeutige Index <span class="inline-code">uk_main_settings_group_key</span> verhindert doppelte Einträge wie zweimal <span class="inline-code">calendar.slot_minutes</span>.</p>
+      </section>
+
+      <section id="datentypen">
+        <h2>4. Unterstützte Datentypen</h2>
+        <table class="admin-table">
+          <tr><th>value_type</th><th>Beispiel</th><th>Administrationsregel</th></tr>
+          <tr><td>string</td><td>week</td><td>Freier Text; bei Auswahlwerten nur dokumentierte Werte verwenden.</td></tr>
+          <tr><td>int</td><td>30</td><td>Nur ganze Zahlen, ohne Einheit.</td></tr>
+          <tr><td>float</td><td>1.5</td><td>Dezimalpunkt in der Datenbank verwenden.</td></tr>
+          <tr><td>boolean</td><td>true</td><td>Nur <span class="inline-code">true</span> oder <span class="inline-code">false</span> speichern.</td></tr>
+          <tr><td>json</td><td>["pdf","png"]</td><td>Gültiges JSON; doppelte Anführungszeichen verwenden.</td></tr>
+          <tr><td>datetime</td><td>2026-07-26 09:00:00</td><td>Format <span class="inline-code">YYYY-MM-DD HH:MM:SS</span>.</td></tr>
+        </table>
+        <div class="admin-callout danger"><strong>Häufiger Fehler:</strong> Der Text <span class="inline-code">1</span> ist nicht dasselbe wie der Boolean-Wert <span class="inline-code">true</span>. Der Loader muss anhand von <span class="inline-code">value_type</span> korrekt konvertieren.</div>
+      </section>
+
+      <section id="gruppen">
+        <h2>5. Einstellungsgruppen</h2>
+        <table class="admin-table">
+          <tr><th>Gruppe</th><th>Zweck</th><th>Wichtige Schlüssel</th></tr>
+          <tr><td>application</td><td>Anwendungsname, Sprache, Zeitzone</td><td>name, locale, timezone</td></tr>
+          <tr><td>calendar</td><td>Raster und sichtbarer Zeitraum</td><td>default_view, slot_minutes, snap_radius_px, hour_start, hour_end</td></tr>
+          <tr><td>views</td><td>Freischaltung der Ansichten</td><td>day, week, month</td></tr>
+          <tr><td>rights</td><td>Erlaubte Benutzeraktionen</td><td>lesson_*, block_*, help_read</td></tr>
+          <tr><td>features</td><td>Technische Funktionsschalter</td><td>drag_drop, overlaps, blocked_slots, help</td></tr>
+          <tr><td>colors</td><td>Darstellungsfarben</td><td>lesson, blocked, today, selection</td></tr>
+          <tr><td>dragdrop</td><td>Verhalten beim Verschieben</td><td>allow_overlap, left_edge_snap, show_preview</td></tr>
+          <tr><td>blocking</td><td>Bedienung blockierter Bereiche</td><td>ctrl_rightclick, ctrl_drag, allow_ranges</td></tr>
+          <tr><td>attachments</td><td>Dateinamen und Grenzen</td><td>enabled, max_files, allowed_extensions</td></tr>
+          <tr><td>events</td><td>Termindauer und Abschlussereignisse</td><td>default_duration, minimum_duration, allow_overlap</td></tr>
+        </table>
+      </section>
+
+      <section id="rechte">
+        <h2>6. Rechteverwaltung</h2>
+        <p>Rechte beantworten die Frage: <em>Darf der angemeldete Benutzer diese Aktion ausführen?</em> Funktionsschalter beantworten dagegen: <em>Ist diese Funktion in der Installation technisch aktiviert?</em></p>
+        <table class="admin-table">
+          <tr><th>Recht</th><th>Wirkung</th><th>Abhängigkeit</th></tr>
+          <tr><td>lesson_read</td><td>Termine darstellen</td><td>Keine Bearbeitung ohne Leserecht anbieten.</td></tr>
+          <tr><td>lesson_create</td><td>Neue Termine anlegen</td><td>Tages- oder Wochenansicht erforderlich.</td></tr>
+          <tr><td>lesson_edit</td><td>Texte, Zuordnungen und Zeiten bearbeiten</td><td>Termin muss lesbar sein.</td></tr>
+          <tr><td>lesson_delete</td><td>Termine entfernen</td><td>Löschschaltfläche ausblenden und serverseitig prüfen.</td></tr>
+          <tr><td>lesson_move</td><td>Drag-and-drop erlauben</td><td><span class="inline-code">features.drag_drop=true</span>.</td></tr>
+          <tr><td>block_read</td><td>Sperrbereiche anzeigen</td><td><span class="inline-code">features.blocked_slots=true</span>.</td></tr>
+          <tr><td>block_create</td><td>Neue Sperren setzen</td><td>Strg+Rechtsklick bzw. Rechtsziehen.</td></tr>
+          <tr><td>block_delete</td><td>Sperren aufheben</td><td>Bestehender Bereich erforderlich.</td></tr>
+          <tr><td>help_read</td><td>Hilfe öffnen</td><td><span class="inline-code">features.help=true</span>.</td></tr>
+        </table>
+        <p class="admin-callout danger"><strong>Sicherheit:</strong> Ein ausgeblendeter Button ist kein Zugriffsschutz. Eine spätere PHP-API muss jedes Recht erneut serverseitig prüfen.</p>
+      </section>
+
+      <section id="ansichten">
+        <h2>7. Ansichten administrieren</h2>
+        <p>Mindestens eine Ansicht muss aktiv sein. Die Standardansicht muss zugleich freigeschaltet sein.</p>
+        <pre class="code-block">UPDATE main_settings
+SET setting_value='month'
+WHERE setting_group='calendar' AND setting_key='default_view';
+
+UPDATE main_settings
+SET setting_value='false'
+WHERE setting_group='views' AND setting_key IN ('day','week');</pre>
+        <ul class="admin-check">
+          <li>Tagesansicht: voller Funktionsumfang eines einzelnen Tages.</li>
+          <li>Wochenansicht: voller Funktionsumfang über sieben Tage.</li>
+          <li>Monatsansicht: reine Darstellung aller Termine, ohne Drag-and-drop.</li>
+        </ul>
+      </section>
+
+      <section id="funktionen">
+        <h2>8. Funktionsschalter und Abhängigkeiten</h2>
+        <table class="admin-table">
+          <tr><th>Funktion</th><th>Voraussetzungen</th><th>Folge bei false</th></tr>
+          <tr><td>drag_drop</td><td>lesson_move</td><td>Terminkacheln bleiben unveränderlich.</td></tr>
+          <tr><td>overlaps</td><td>events.allow_overlap</td><td>Überlagerungen sollten vor dem Speichern abgewiesen werden.</td></tr>
+          <tr><td>blocked_slots</td><td>block_read/create/delete</td><td>Keine Sperrbereiche darstellen oder bedienen.</td></tr>
+          <tr><td>block_range_drag</td><td>blocked_slots</td><td>Nur einzelne Slots umschaltbar.</td></tr>
+          <tr><td>help</td><td>help_read</td><td>Hilfeschaltfläche ausblenden.</td></tr>
+          <tr><td>completion_events</td><td>lesson_move</td><td>Keine Verschiebe-Abschlussereignisse erzeugen.</td></tr>
+        </table>
+      </section>
+
+      <section id="pflege">
+        <h2>9. Einstellungen sicher pflegen</h2>
+        <h3>Einzelwert ändern</h3>
+        <pre class="code-block">UPDATE main_settings
+SET setting_value='5'
+WHERE setting_group='calendar'
+  AND setting_key='snap_radius_px'
+  AND editable=1;</pre>
+        <h3>Wert lesen</h3>
+        <pre class="code-block">SELECT setting_value, value_type
+FROM main_settings
+WHERE setting_group='calendar' AND setting_key='slot_minutes';</pre>
+        <h3>Neuen Schlüssel ergänzen</h3>
+        <pre class="code-block">INSERT INTO main_settings
+(setting_group, setting_key, setting_value, value_type, description)
+VALUES ('calendar','show_slot_labels','true','boolean','Zeitbeschriftung je Slot anzeigen.');</pre>
+        <p class="admin-example"><strong>Empfehlung:</strong> Änderungen zunächst in einer Testinstallation vornehmen, danach die Kalenderansichten und die Browserkonsole prüfen.</p>
+      </section>
+
+      <section id="validierung">
+        <h2>10. Validierungsregeln</h2>
+        <ul class="admin-check">
+          <li><span class="inline-code">slot_minutes</span> muss größer als 0 sein und sinnvollerweise 60 ohne Rest teilen.</li>
+          <li><span class="inline-code">hour_start</span> muss kleiner als <span class="inline-code">hour_end</span> sein.</li>
+          <li><span class="inline-code">snap_radius_px</span> darf nicht negativ sein; Projektstandard ist 5.</li>
+          <li><span class="inline-code">default_view</span> muss day, week oder month sein.</li>
+          <li>Mindestens eine der drei Ansichten muss aktiv sein.</li>
+          <li>JSON-Werte müssen mit <span class="inline-code">JSON_VALID(setting_value)</span> geprüft werden.</li>
+          <li>Farben sollten gültige CSS-Farbwerte sein.</li>
+        </ul>
+        <pre class="code-block">SELECT setting_group, setting_key, setting_value
+FROM main_settings
+WHERE value_type='json' AND JSON_VALID(setting_value)=0;</pre>
+      </section>
+
+      <section id="init">
+        <h2>11. Von main_settings zur init.json</h2>
+        <p>Der aktuelle Kalender lädt eine statische <span class="inline-code">init.json</span>. Für einen produktiven Betrieb sollte ein PHP-Endpunkt die Datenbankwerte lesen, typisieren und als JSON ausgeben.</p>
+        <ol class="admin-steps">
+          <li>Alle globalen Werte aus <span class="inline-code">main_settings</span> lesen.</li>
+          <li>Werte anhand von <span class="inline-code">value_type</span> in int, float, bool oder JSON umwandeln.</li>
+          <li>Schlüssel nach <span class="inline-code">setting_group</span> zu verschachtelten Objekten gruppieren.</li>
+          <li>Rollen- und Benutzerrechte darüberlegen.</li>
+          <li>Nur die für den angemeldeten Benutzer gültige Konfiguration ausliefern.</li>
+        </ol>
+        <pre class="code-block">{
+  "views": { "default": "week", "day": true, "week": true, "month": true },
+  "rights": { "lesson_read": true, "lesson_move": true },
+  "features": { "drag_drop": true, "overlaps": true },
+  "calendar": { "slot_minutes": 30, "snap_radius_px": 5 }
+}</pre>
+      </section>
+
+      <section id="profile">
+        <h2>12. Empfohlene Rollenprofile</h2>
+        <h3>Administrator</h3>
+        <p>Alle Ansichten, Rechte und Funktionen aktiviert. Löschen und Blockieren erlaubt.</p>
+        <h3>Tutor</h3>
+        <p>Termine lesen, anlegen, bearbeiten und verschieben; Löschrecht optional. Tages- und Wochenansicht aktiviert.</p>
+        <h3>Student</h3>
+        <p>Termine lesen; Monats-, Wochen- oder Tagesansicht nach Bedarf. Keine Änderungen und keine Blockierungsverwaltung.</p>
+        <h3>Informationsanzeige</h3>
+        <p>Nur Monatsansicht und <span class="inline-code">lesson_read</span>; alle Bearbeitungsrechte deaktiviert.</p>
+      </section>
+
+      <section id="sicherung">
+        <h2>13. Sicherung, Export und Rücksetzung</h2>
+        <h3>Sicherung</h3>
+        <pre class="code-block">mysqldump -u root -p datenbank main_settings &gt; main_settings_backup.sql</pre>
+        <h3>CSV- oder JSON-Export</h3>
+        <p>Vor größeren Änderungen sollte zusätzlich ein Export über phpMyAdmin erzeugt werden. Die Felder <span class="inline-code">setting_group</span>, <span class="inline-code">setting_key</span>, <span class="inline-code">setting_value</span> und <span class="inline-code">value_type</span> müssen erhalten bleiben.</p>
+        <h3>Standardwerte wiederherstellen</h3>
+        <p>Das mitgelieferte Skript <span class="inline-code">sql/main_settings.sql</span> erneut ausführen. Durch <span class="inline-code">ON DUPLICATE KEY UPDATE</span> werden die enthaltenen Standards wieder eingesetzt.</p>
+      </section>
+
+      <section id="fehler">
+        <h2>14. Fehlerdiagnose</h2>
+        <table>
+          <tr><th>Fehlerbild</th><th>Prüfung</th><th>Maßnahme</th></tr>
+          <tr><td>Kalender startet nicht</td><td>Browser-Netzwerk und init.json prüfen</td><td>Webserver verwenden, JSON-Syntax korrigieren.</td></tr>
+          <tr><td>Ansicht fehlt</td><td>views.* und default_view prüfen</td><td>Ansicht auf true setzen und Startansicht angleichen.</td></tr>
+          <tr><td>Drag-and-drop fehlt</td><td>lesson_move und drag_drop</td><td>Recht und Funktion gemeinsam aktivieren.</td></tr>
+          <tr><td>Sperren nicht möglich</td><td>blocked_slots, block_create, Tastenkombination</td><td>Strg+Rechtsklick verwenden; Rechte prüfen.</td></tr>
+          <tr><td>Falsche Zeiten</td><td>timezone, hour_start, hour_end</td><td>IANA-Zeitzone und sichtbaren Bereich korrigieren.</td></tr>
+          <tr><td>JSON-Einstellung wird Text</td><td>value_type</td><td>Auf json setzen und Loader typisieren.</td></tr>
+        </table>
+      </section>
+
+      <section id="sicherheit">
+        <h2>15. Sicherheit und produktiver Betrieb</h2>
+        <ul class="admin-check">
+          <li>Adminseiten nur nach Session-Login bereitstellen.</li>
+          <li>Änderungen mit CSRF-Token absichern.</li>
+          <li>Prepared Statements für alle Datenbankzugriffe verwenden.</li>
+          <li>Gruppen und Schlüssel serverseitig über Positivlisten prüfen.</li>
+          <li>Rohes JSON vor dem Speichern validieren.</li>
+          <li>Rechte bei jeder API-Aktion erneut prüfen.</li>
+          <li>Änderungen an Einstellungen in einer Audit-Tabelle protokollieren.</li>
+          <li>Die Datenbankzugangsdaten niemals in JavaScript oder init.json ablegen.</li>
+        </ul>
+      </section>
+
+      <section id="checklisten">
+        <h2>16. Administrationschecklisten</h2>
+        <h3>Vor Freigabe</h3>
+        <ul class="admin-check"><li>Datenbanksicherung vorhanden</li><li>Mindestens eine Ansicht aktiv</li><li>Standardansicht freigeschaltet</li><li>Rechteprofil getestet</li><li>Drag-and-drop und 5-px-Snap geprüft</li><li>Überlagerungen geprüft</li><li>Strg+Rechtsklick geprüft</li><li>Hilfe und Handbücher erreichbar</li></ul>
+        <h3>Nach einer Änderung</h3>
+        <ul class="admin-check"><li>Browser neu laden</li><li>Konfiguration im Netzwerk-Tab prüfen</li><li>Tag, Woche und Monat testen</li><li>Termin anlegen, verschieben und löschen</li><li>Blockbereich setzen und entfernen</li><li>Browserkonsole auf Fehler prüfen</li></ul>
+      </section>
+
+      <section id="faq" class="admin-faq">
+        <h2>17. Häufige Fragen</h2>
+        <details><summary>Warum gibt es main_settings und init.json?</summary><p><span class="inline-code">main_settings</span> ist die zentrale administrative Datenquelle. <span class="inline-code">init.json</span> ist die konkrete Laufzeitkonfiguration für den Browser.</p></details>
+        <details><summary>Darf ich neue Einstellungsgruppen anlegen?</summary><p>Ja. Der Loader oder die Adminoberfläche muss die neue Gruppe jedoch kennen und validieren.</p></details>
+        <details><summary>Kann eine Rolle eigene Einstellungen erhalten?</summary><p>Ja. Dafür sollte später eine separate Tabelle für Rollenüberschreibungen ergänzt werden, statt globale Werte in <span class="inline-code">main_settings</span> mehrfach anzulegen.</p></details>
+        <details><summary>Warum werden Booleans als Text gespeichert?</summary><p>Die Tabelle verwendet einen einheitlichen Textspeicher. <span class="inline-code">value_type</span> legt fest, wie der Loader den Rohwert typisiert.</p></details>
+        <details><summary>Ist die Monatsansicht bearbeitbar?</summary><p>Nein. Sie ist absichtlich eine reine Darstellungsansicht.</p></details>
+      </section>
+    </div>
+  </div>
+  <p class="footer">easyIT Calendar – Administrationshandbuch für main_settings und Initialisierung</p>
+</main>
+</body>
+</html>

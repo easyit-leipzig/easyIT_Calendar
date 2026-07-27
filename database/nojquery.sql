@@ -44,7 +44,7 @@ CREATE TABLE `main_settings` (
 --
 
 INSERT INTO `main_settings` (`setting_id`, `setting_group`, `setting_key`, `setting_value`, `value_type`, `description`, `editable`, `created_at`, `updated_at`) VALUES
-(1, 'calendar', 'title', 'easyIT Calendar', 'string', 'Kalendertitel', 1, '2026-07-26 09:53:21', '2026-07-26 09:53:21'),
+(1, 'calendar', 'title', 'easyITCalendar', 'string', 'Kalendertitel', 1, '2026-07-26 09:53:21', '2026-07-26 09:53:21'),
 (2, 'calendar', 'default_view', 'week', 'string', 'Standardansicht', 1, '2026-07-26 09:53:21', '2026-07-26 09:53:21'),
 (3, 'calendar', 'week_start', '1', 'int', 'Montag=1', 1, '2026-07-26 09:53:21', '2026-07-26 09:53:21'),
 (4, 'calendar', 'slot_minutes', '30', 'int', 'Raster', 1, '2026-07-26 09:53:21', '2026-07-26 09:53:21'),

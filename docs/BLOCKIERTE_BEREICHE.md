@@ -35,9 +35,9 @@ Format:
 
 ## JavaScript-API
 
-- `TinyCalendar.getBlockedSlots()`
-- `TinyCalendar.setBlockedSlots(slots)`
-- `TinyCalendar.toggleBlockedSlot(date, time)`
+- `easyITCalendar.getBlockedSlots()`
+- `easyITCalendar.setBlockedSlots(slots)`
+- `easyITCalendar.toggleBlockedSlot(date, time)`
 
 Ereignisse:
 

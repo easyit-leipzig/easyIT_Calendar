@@ -44,10 +44,10 @@ document.addEventListener('tinycalendar:lesson-move-completed', function (event)
 ## API
 
 ```js
-TinyCalendar.getCompletionEvents();
-TinyCalendar.clearCompletionEvents();
-TinyCalendar.moveLesson(lessonId, '2026-07-30', '10:30');
-TinyCalendar.onMoveCompleted = function (event) {};
+easyITCalendar.getCompletionEvents();
+easyITCalendar.clearCompletionEvents();
+easyITCalendar.moveLesson(lessonId, '2026-07-30', '10:30');
+easyITCalendar.onMoveCompleted = function (event) {};
 ```
 
 

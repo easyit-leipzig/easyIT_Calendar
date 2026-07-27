@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS main_settings (
 INSERT INTO main_settings
 (setting_group, setting_key, setting_value, value_type, description, editable)
 VALUES
-('application','name','easyIT Calendar','string','Anzeigename der Kalenderanwendung.',1),
+('application','name','easyITCalendar','string','Anzeigename der Kalenderanwendung.',1),
 ('application','locale','de-DE','string','Sprache und Zahlen-/Datumsformat.',1),
 ('application','timezone','Europe/Stockholm','string','IANA-Zeitzone für Datum und Uhrzeit.',1),
 ('calendar','default_view','week','string','Startansicht: day, week oder month.',1),

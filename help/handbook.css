@@ -1,3 +1,4 @@
+:root{--easyit-blue:#0754ad;--easyit-blue-dark:#073e80;--easyit-black:#12161b;}
 .manual-layout { display:grid; grid-template-columns:minmax(190px,240px) minmax(0,1fr); gap:1.25rem; align-items:start; margin-top:1.2rem; }
 .manual-toc { position:sticky; top:1rem; padding:.85rem; border:1px solid #d8dde3; border-radius:.65rem; background:#f8fafc; }
 .manual-toc strong { display:block; margin-bottom:.45rem; }

@@ -1,4 +1,4 @@
-# TinyCalendar – nojquery / JavaScript
+# easyITCalendar – nojquery / JavaScript
 
 Dieser Stand ist eine vollständige, eigenständig lauffähige Neufassung des für die Stundenplanung benötigten Kalenderkerns.
 
@@ -17,7 +17,7 @@ Dieser Stand ist eine vollständige, eigenständig lauffähige Neufassung des f�
 - automatische versetzte Teilspalten bei gleichen oder überlappenden Zeiten
 - Zeit, Fach und Notiz bleiben auch bei Überlagerungen sichtbar
 - Speicherung im Browser über `localStorage`
-- öffentliche JavaScript-API über `window.TinyCalendar`
+- öffentliche JavaScript-API über `window.easyITCalendar`
 
 ## Start
 
@@ -46,9 +46,9 @@ Das Ende wird automatisch auf 30 Minuten nach dem Beginn gesetzt.
 ## Öffentliche API
 
 ```js
-TinyCalendar.getLessons();
-TinyCalendar.setLessons([...]);
-TinyCalendar.openSlot('2026-07-27', '09:30');
+easyITCalendar.getLessons();
+easyITCalendar.setLessons([...]);
+easyITCalendar.openSlot('2026-07-27', '09:30');
 ```
 
 ## Abgrenzung zum ursprünglichen Paket
@@ -70,10 +70,10 @@ document.addEventListener('tinycalendar:lesson-move-completed', function (event)
 Öffentliche API:
 
 ```js
-TinyCalendar.getCompletionEvents();
-TinyCalendar.clearCompletionEvents();
-TinyCalendar.moveLesson(lessonId, '2026-07-30', '10:30');
-TinyCalendar.onMoveCompleted = function (completionEvent) {
+easyITCalendar.getCompletionEvents();
+easyITCalendar.clearCompletionEvents();
+easyITCalendar.moveLesson(lessonId, '2026-07-30', '10:30');
+easyITCalendar.onMoveCompleted = function (completionEvent) {
   console.log(completionEvent);
 };
 ```
@@ -141,3 +141,11 @@ Das vollständige Handbuch liegt unter `help/handbook.html`. Es ist über die Ü
 ## Administrationshandbuch
 
 Das ausführliche Administrationshandbuch liegt unter `help/admin-handbook.html`. Das zugehörige MariaDB-/MySQL-Skript mit Tabelle und Grundwerten befindet sich unter `sql/main_settings.sql`.
+
+## PHP-/Datenbankbetrieb
+
+Der Einstiegspunkt ist jetzt `index.php`. Termine werden beim Start sowie beim Wechseln und Blättern der Tages-, Wochen- und Monatsansicht über `api/events.php` aus `easyit_calendar` geladen. Anlegen, Bearbeiten, Drag-and-drop-Verschieben und Deaktivieren erfolgen als serverseitige CRUD-Operationen. Details: `docs/PHP_API_CRUD.md`.
+
+## nojquery-POST-Handler
+
+Die Terminoperationen laufen über `nj.post()` und den zentralen PHP-Handler `api/calendar_handler.php`. Laden, Anlegen, Ändern und Löschen werden als POST-Anfragen mit dem Feld `action` übertragen. Einzelheiten stehen in `docs/NOJQUERY_POST_HANDLER.md`.

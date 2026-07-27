@@ -1,14 +1,22 @@
+<?php
+declare(strict_types=1);
+session_start();
+if (empty($_SESSION['easyit_calendar_csrf'])) {
+    $_SESSION['easyit_calendar_csrf'] = bin2hex(random_bytes(32));
+}
+$easyITCalendarCsrf = $_SESSION['easyit_calendar_csrf'];
+?>
 <!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>easyITCalendar – Stundenplanung</title>
-  <link rel="stylesheet" href="assets/css/calendar.css?v=20260726-2">
+  <link rel="stylesheet" href="assets/css/calendar.css?v=20260726-3">
 </head>
 <body>
   <header class="app-header">
-    <a class="brand" href="index.html" aria-label="easyITCalendar Startseite">
+    <a class="brand" href="index.php" aria-label="easyITCalendar Startseite">
       <img class="brand-logo" src="assets/img/easyITCalendar-logo.png" alt="easyITCalendar">
       <span class="brand-text">
         <strong>easyITCalendar</strong>
@@ -77,7 +85,12 @@
     </div>
   </dialog>
 
-  <script src="assets/js/nojquery.core.js?v=20260726-2"></script>
-  <script src="assets/js/bootstrap.js?v=20260726-2"></script>
+  <script src="assets/js/nojquery.core.js?v=20260726-4"></script>
+  <script src="assets/js/nojquery.post.js?v=20260726-4"></script>
+  <script>
+    window.easyITCalendarHandler = "api/calendar_handler.php";
+    window.easyITCalendarCsrf = <?= json_encode($easyITCalendarCsrf, JSON_UNESCAPED_SLASHES) ?>;
+  </script>
+  <script src="assets/js/bootstrap.js?v=20260726-4"></script>
 </body>
 </html>

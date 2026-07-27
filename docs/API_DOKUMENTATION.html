@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>easyITCalendar – vollständige API-Dokumentation</title>
+<style>
+:root{--blue:#0057b8;--blue2:#003f86;--cyan:#eaf4ff;--ink:#17212b;--muted:#5d6b78;--line:#d8e0e8;--soft:#f5f8fb;--ok:#176b3a;--warn:#9a5b00;--danger:#a52525;--code:#101820;--white:#fff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);background:var(--soft);line-height:1.58}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}.layout{display:grid;grid-template-columns:290px minmax(0,1fr);min-height:100vh}.sidebar{position:sticky;top:0;height:100vh;overflow:auto;background:#0d2034;color:#fff;padding:24px 20px}.brand{display:flex;gap:12px;align-items:center;margin-bottom:22px}.brand img{width:72px;height:auto;background:#fff;border-radius:10px;padding:5px}.brand strong{display:block;font-size:1.08rem}.brand small{display:block;color:#b9cee3}.nav-title{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:#88a8c7;margin:22px 0 8px}.sidebar nav a{display:block;color:#e7f1fa;padding:7px 9px;border-radius:6px;font-size:.93rem}.sidebar nav a:hover{background:#163a5d;text-decoration:none}.content{min-width:0}.hero{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;padding:48px clamp(24px,5vw,70px)}.hero h1{margin:0 0 10px;font-size:clamp(2rem,4vw,3.2rem);line-height:1.1}.hero p{max-width:900px;margin:8px 0;color:#e9f4ff}.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.badge{border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:5px 10px;font-size:.82rem}.main{max-width:1180px;padding:34px clamp(20px,4vw,60px) 80px}.section{background:#fff;border:1px solid var(--line);border-radius:12px;padding:28px;margin:0 0 24px;box-shadow:0 4px 18px rgba(14,43,70,.05)}h2{font-size:1.55rem;color:var(--blue2);border-bottom:3px solid #d7e9fb;padding-bottom:9px;margin:0 0 20px}h3{color:#194d7b;margin-top:28px}h4{margin-bottom:6px}.lead{font-size:1.07rem}.callout{border-left:5px solid var(--blue);background:var(--cyan);padding:14px 16px;margin:16px 0}.callout.warn{border-color:#e29100;background:#fff7e6}.callout.danger{border-color:var(--danger);background:#fff0f0}.callout.ok{border-color:var(--ok);background:#eefaf2}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:14px}.card{border:1px solid var(--line);border-radius:9px;padding:15px;background:#fbfdff}.card strong{color:var(--blue2)}table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.94rem}th,td{border:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}th{background:#eaf2f9;color:#173d61}code{font-family:Consolas,Monaco,monospace;background:#edf1f5;padding:2px 5px;border-radius:4px;font-size:.9em}pre{background:var(--code);color:#eaf2f8;border-radius:9px;padding:16px;overflow:auto;line-height:1.45}pre code{background:transparent;padding:0;color:inherit}.method{display:inline-block;background:#3d6d96;color:#fff;border-radius:4px;padding:2px 7px;font-weight:700;font-size:.78rem}.route{font-family:Consolas,monospace;font-weight:700}.toc-mini{columns:2;column-gap:30px}.toc-mini li{break-inside:avoid}.muted{color:var(--muted)}.footer{border-top:1px solid var(--line);padding:22px;color:var(--muted);font-size:.9rem}.anchor{scroll-margin-top:20px}@media(max-width:900px){.layout{display:block}.sidebar{position:relative;height:auto}.sidebar nav{columns:2}.hero{padding:34px 22px}.main{padding:24px 14px}.section{padding:20px}.toc-mini{columns:1}}@media print{.sidebar{display:none}.layout{display:block}.section{box-shadow:none;break-inside:avoid}.hero{background:#fff;color:#000;padding:20px 0}.hero p{color:#333}.main{max-width:none;padding:0}.content{width:100%}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand"><img src="../assets/img/easyITCalendar-logo.png" alt="easyITCalendar"><div><strong>easyITCalendar</strong><small>API-Referenz</small></div></div>
+  <div class="nav-title">Grundlagen</div>
+  <nav>
+    <a href="#ueberblick">1. Überblick</a><a href="#architektur">2. Architektur</a><a href="#installation">3. Installation</a><a href="#transport">4. nojquery POST</a><a href="#protokoll">5. Protokoll</a>
+  </nav>
+  <div class="nav-title">Aktionen</div>
+  <nav>
+    <a href="#list">6. list</a><a href="#create">7. create</a><a href="#update">8. update</a><a href="#delete">9. delete</a><a href="#datenmodell">10. Datenmodell</a>
+  </nav>
+  <div class="nav-title">Betrieb</div>
+  <nav>
+    <a href="#fehler">11. Fehlercodes</a><a href="#sicherheit">12. Sicherheit</a><a href="#frontend">13. Frontend-Integration</a><a href="#erweiterung">14. Erweiterung</a><a href="#tests">15. Tests</a><a href="#grenzen">16. Grenzen</a>
+  </nav>
+</aside>
+<div class="content">
+<header class="hero">
+  <h1>Vollständige API-Dokumentation</h1>
+  <p>Technische Referenz für die Kommunikation zwischen dem easyITCalendar-Frontend, <strong>nojquery.post.js</strong>, dem zentralen PHP-Handler und der MariaDB-Datenbank <strong>easyit_calendar</strong>.</p>
+  <div class="badges"><span class="badge">JSON über POST</span><span class="badge">PHP 8.2+</span><span class="badge">PDO / Prepared Statements</span><span class="badge">MariaDB 10.4</span><span class="badge">CSRF-geschützt</span></div>
+</header>
+<main class="main">
+<section id="ueberblick" class="section anchor">
+<h2>1. Überblick</h2>
+<p class="lead">Die Kalender-API verwendet bewusst keinen klassischen REST-Endpunkt mit GET, PUT oder DELETE. Sämtliche Operationen laufen über einen zentralen PHP-Handler und werden durch das JSON-Feld <code>action</code> unterschieden.</p>
+<div class="grid">
+<div class="card"><strong>Handler</strong><br><code>api/calendar_handler.php</code></div>
+<div class="card"><strong>Transport</strong><br><code>assets/js/nojquery.post.js</code></div>
+<div class="card"><strong>Datenbank</strong><br><code>easyit_calendar</code></div>
+<div class="card"><strong>Frontend-Einstieg</strong><br><code>index.php</code></div>
+</div>
+<div class="callout"><strong>Grundprinzip:</strong> Der Browser sendet JSON per POST. Der Handler validiert Sitzung, CSRF-Token und Nutzdaten, führt die Datenbankoperation aus und antwortet wiederum mit JSON.</div>
+<table><thead><tr><th>Action</th><th>Zweck</th><th>Erfolgsstatus</th></tr></thead><tbody>
+<tr><td><code>list</code></td><td>Termine eines sichtbaren Zeitraums laden</td><td>200</td></tr>
+<tr><td><code>create</code></td><td>Termin, Teilnehmer und Anlagen-Metadaten anlegen</td><td>201</td></tr>
+<tr><td><code>update</code></td><td>Bestehenden Termin vollständig aktualisieren</td><td>200</td></tr>
+<tr><td><code>delete</code></td><td>Termin per Soft Delete deaktivieren</td><td>200</td></tr>
+</tbody></table>
+</section>
+
+<section id="architektur" class="section anchor">
+<h2>2. Architektur und Datenfluss</h2>
+<pre><code>index.php
+  ├─ startet PHP-Session
+  ├─ erzeugt CSRF-Token
+  └─ stellt Handler-URL und Token in window.* bereit
+          │
+          ▼
+calendar.js / bootstrap.js
+          │ nj.post(...)
+          ▼
+assets/js/nojquery.post.js
+  ├─ JSON.stringify()
+  ├─ POST + Content-Type application/json
+  ├─ X-CSRF-Token
+  ├─ Timeout / AbortController
+  └─ JSON- und HTTP-Fehlerbehandlung
+          │
+          ▼
+api/calendar_handler.php
+  ├─ POST-Prüfung
+  ├─ CSRF-Prüfung
+  ├─ request_json()
+  ├─ action-Routing
+  ├─ Validierung
+  ├─ Transaktion
+  └─ json_response()
+          │
+          ▼
+PDO → MariaDB easyit_calendar</code></pre>
+<h3>2.1 Zentrale Dateien</h3>
+<table><thead><tr><th>Datei</th><th>Aufgabe</th></tr></thead><tbody>
+<tr><td><code>index.php</code></td><td>Sessionstart, Erzeugung des CSRF-Tokens, Auslieferung des Frontends.</td></tr>
+<tr><td><code>api/config.php</code></td><td>Datenbankparameter, Standard-Benutzer-ID und Anlagenpfad.</td></tr>
+<tr><td><code>api/db.php</code></td><td>PDO-Verbindung, JSON-Antworten und Einlesen des JSON-Request-Bodys.</td></tr>
+<tr><td><code>api/calendar_handler.php</code></td><td>Routing und CRUD-Funktionen.</td></tr>
+<tr><td><code>assets/js/nojquery.post.js</code></td><td>Wiederverwendbare POST-Transportschicht.</td></tr>
+<tr><td><code>assets/js/calendar.js</code></td><td>Kalenderdarstellung, Zeitraumwechsel, Dialog und CRUD-Aufrufe.</td></tr>
+</tbody></table>
+</section>
+
+<section id="installation" class="section anchor">
+<h2>3. Installation und Konfiguration</h2>
+<h3>3.1 Voraussetzungen</h3>
+<ul><li>Apache oder ein anderer PHP-fähiger Webserver</li><li>PHP 8.2 oder höher mit PDO-MySQL</li><li>MariaDB 10.4 oder kompatibel</li><li>Aktivierte PHP-Sessions</li></ul>
+<h3>3.2 Datenbank importieren</h3>
+<pre><code>sql/easyit_calendar_database.sql</code></pre>
+<p>Das Skript erzeugt die Datenbankstruktur, Rollen, Personen, Benutzer, Events, Teilnehmerzuordnungen, Anlagen und weitere Kalendertabellen.</p>
+<h3>3.3 API konfigurieren</h3>
+<pre><code>&lt;?php
+return [
+    'db' =&gt; [
+        'host' =&gt; '127.0.0.1',
+        'port' =&gt; 3306,
+        'name' =&gt; 'easyit_calendar',
+        'user' =&gt; 'root',
+        'password' =&gt; '',
+        'charset' =&gt; 'utf8mb4',
+    ],
+    'default_user_id' =&gt; 1,
+    'attachments_path' =&gt; 'uploads/events',
+];</code></pre>
+<div class="callout warn"><strong>Wichtig:</strong> <code>default_user_id</code> muss auf einen tatsächlich vorhandenen Datensatz in der Benutzertabelle zeigen. Der derzeitige Handler besitzt noch keine Benutzeranmeldung und verwendet deshalb diesen technischen Standardbenutzer.</div>
+<h3>3.4 Aufruf</h3>
+<pre><code>http://localhost/easyIT_Calendar/index.php</code></pre>
+<p>Ein Aufruf über <code>file:///...</code> funktioniert nicht, weil PHP, Session und Datenbankzugriff einen Webserver benötigen.</p>
+</section>
+
+<section id="transport" class="section anchor">
+<h2>4. nojquery POST-Transportschicht</h2>
+<h3>4.1 Signatur</h3>
+<pre><code>const result = await nj.post(url, data, options);</code></pre>
+<table><thead><tr><th>Parameter</th><th>Typ</th><th>Beschreibung</th></tr></thead><tbody>
+<tr><td><code>url</code></td><td>String</td><td>Zieladresse des PHP-Handlers.</td></tr>
+<tr><td><code>data</code></td><td>Objekt</td><td>Wird mit <code>JSON.stringify()</code> in den Request-Body geschrieben.</td></tr>
+<tr><td><code>options.timeout</code></td><td>Number</td><td>Zeitlimit in Millisekunden; Standard aus <code>nj.config.ajaxTimeout</code> oder 8000.</td></tr>
+<tr><td><code>options.credentials</code></td><td>String</td><td>Standard <code>same-origin</code>; notwendig für die Session.</td></tr>
+<tr><td><code>options.headers</code></td><td>Objekt</td><td>Zusätzliche Header, insbesondere <code>X-CSRF-Token</code>.</td></tr>
+<tr><td><code>options.signal</code></td><td>AbortSignal</td><td>Ermöglicht den externen Abbruch einer Anfrage.</td></tr>
+</tbody></table>
+<h3>4.2 Standardaufruf</h3>
+<pre><code>const result = await nj.post(
+  window.easyITCalendarHandler,
+  {
+    action: 'list',
+    start: '2026-07-27',
+    end: '2026-08-03'
+  },
+  {
+    headers: {
+      'X-CSRF-Token': window.easyITCalendarCsrf
+    }
+  }
+);</code></pre>
+<h3>4.3 Transportverhalten</h3>
+<ul><li>HTTP-Methode: <code>POST</code></li><li><code>Accept: application/json</code></li><li><code>Content-Type: application/json; charset=UTF-8</code></li><li><code>cache: no-store</code></li><li><code>credentials: same-origin</code></li></ul>
+<p>Bei ungültigem JSON, HTTP-Fehlern oder <code>{"ok":false}</code> wirft <code>nj.post()</code> ein JavaScript-<code>Error</code>-Objekt. Der HTTP-Status steht zusätzlich in <code>error.status</code>, die Serverantwort in <code>error.response</code>.</p>
+</section>
+
+<section id="protokoll" class="section anchor">
+<h2>5. Allgemeines Request-/Response-Protokoll</h2>
+<h3>5.1 Endpunkt</h3><p><span class="method">POST</span> <span class="route">api/calendar_handler.php</span></p>
+<h3>5.2 Erforderliche Header</h3>
+<pre><code>Content-Type: application/json; charset=UTF-8
+Accept: application/json
+X-CSRF-Token: &lt;Token aus index.php&gt;</code></pre>
+<h3>5.3 Minimaler Request</h3>
+<pre><code>{
+  "action": "list",
+  "start": "2026-07-27",
+  "end": "2026-08-03"
+}</code></pre>
+<h3>5.4 Erfolgsantwort</h3>
+<pre><code>{
+  "ok": true,
+  "action": "list",
+  "events": []
+}</code></pre>
+<h3>5.5 Fehlerantwort</h3>
+<pre><code>{
+  "ok": false,
+  "error": "Beschreibung des Fehlers"
+}</code></pre>
+<div class="callout"><strong>Datumslogik:</strong> Beim Laden ist <code>end</code> exklusiv. Der Bereich <code>2026-07-27</code> bis <code>2026-08-03</code> umfasst damit den 27. Juli 00:00 Uhr bis unmittelbar vor den 3. August 00:00 Uhr.</div>
+</section>
+
+<section id="list" class="section anchor">
+<h2>6. Aktion <code>list</code></h2>
+<p>Lädt alle aktiven Termine, die den angeforderten Zeitraum schneiden.</p>
+<h3>6.1 Request</h3>
+<pre><code>{
+  "action": "list",
+  "start": "2026-07-27",
+  "end": "2026-08-03"
+}</code></pre>
+<table><thead><tr><th>Feld</th><th>Pflicht</th><th>Format</th><th>Bedeutung</th></tr></thead><tbody>
+<tr><td><code>action</code></td><td>ja</td><td><code>list</code></td><td>Wählt die Ladefunktion.</td></tr>
+<tr><td><code>start</code></td><td>ja</td><td>YYYY-MM-DD</td><td>Inklusive Untergrenze.</td></tr>
+<tr><td><code>end</code></td><td>ja</td><td>YYYY-MM-DD</td><td>Exklusive Obergrenze; muss nach <code>start</code> liegen.</td></tr>
+</tbody></table>
+<h3>6.2 Auswahlbedingung</h3>
+<pre><code>e.activ = 1
+AND e.start &lt; range_end
+AND e.end &gt;= range_start</code></pre>
+<p>Dadurch werden auch Termine geliefert, die vor dem sichtbaren Zeitraum beginnen oder nach ihm enden, ihn aber überlappen.</p>
+<h3>6.3 Response</h3>
+<pre><code>{
+  "ok": true,
+  "action": "list",
+  "events": [
+    {
+      "id": 15,
+      "to_role": 3,
+      "to_tutor": 1,
+      "to_student": 2,
+      "start": "2026-07-27T09:00:00",
+      "end": "2026-07-27T10:30:00",
+      "activ": true,
+      "thema": "Mathematik",
+      "description": "Lineare Gleichungen",
+      "appendizies": ["arbeitsblatt.pdf"],
+      "version_no": 2
+    }
+  ]
+}</code></pre>
+<div class="callout warn"><strong>Kompatibilitätsfelder:</strong> <code>to_tutor</code>, <code>to_student</code> und <code>to_role</code> werden aus der normalisierten Tabelle <code>event_participants</code> abgeleitet. Bei mehreren Personen liefert diese API-Version jeweils nur die primär markierte Person.</div>
+</section>
+
+<section id="create" class="section anchor">
+<h2>7. Aktion <code>create</code></h2>
+<p>Legt einen neuen Eventdatensatz an und speichert anschließend Teilnehmerzuordnungen und Anlagen-Metadaten in derselben Transaktion.</p>
+<h3>7.1 Request</h3>
+<pre><code>{
+  "action": "create",
+  "to_role": 3,
+  "to_tutor": 1,
+  "to_student": 2,
+  "start": "2026-07-27T09:00:00",
+  "end": "2026-07-27T10:30:00",
+  "activ": true,
+  "thema": "Mathematik",
+  "description": "Lineare Gleichungen",
+  "appendizies": ["arbeitsblatt.pdf", "notizen.docx"]
+}</code></pre>
+<h3>7.2 Validierung</h3>
+<ul><li><code>start</code> und <code>end</code> müssen exakt <code>YYYY-MM-DDTHH:MM:SS</code> entsprechen.</li><li><code>end</code> muss nach <code>start</code> liegen.</li><li><code>thema</code> wird auf 255 Zeichen gekürzt.</li><li>IDs kleiner als 0 werden auf 0 begrenzt; <code>to_role</code> mindestens auf 1.</li><li>Anlagennamen werden getrimmt, leere Werte entfernt und Duplikate beseitigt.</li></ul>
+<h3>7.3 Response</h3>
+<pre><code>HTTP 201
+{
+  "ok": true,
+  "action": "create",
+  "id": 42
+}</code></pre>
+<h3>7.4 Speicherung</h3>
+<ul><li><code>events</code>: Kerndaten des Termins</li><li><code>event_participants</code>: primärer Tutor und primärer Student</li><li><code>event_attachments</code>: Dateinamen und berechnete Speicherpfade</li></ul>
+</section>
+
+<section id="update" class="section anchor">
+<h2>8. Aktion <code>update</code></h2>
+<p>Aktualisiert einen vorhandenen Termin vollständig. Die Aktion wird sowohl vom Bearbeitungsdialog als auch beim Drag-and-drop verwendet.</p>
+<h3>8.1 Request</h3>
+<pre><code>{
+  "action": "update",
+  "id": 42,
+  "to_role": 3,
+  "to_tutor": 1,
+  "to_student": 2,
+  "start": "2026-07-27T10:00:00",
+  "end": "2026-07-27T11:30:00",
+  "activ": true,
+  "thema": "Mathematik",
+  "description": "Verschobener Termin",
+  "appendizies": ["arbeitsblatt.pdf"]
+}</code></pre>
+<h3>8.2 Verhalten</h3>
+<ol><li>Eventfelder werden aktualisiert.</li><li><code>version_no</code> wird um 1 erhöht.</li><li>Vorhandene Teilnehmerzuordnungen werden gelöscht und neu angelegt.</li><li>Vorhandene Anlagen-Metadaten werden gelöscht und neu angelegt.</li><li>Alle Schritte laufen in einer Datenbanktransaktion.</li></ol>
+<h3>8.3 Response</h3>
+<pre><code>HTTP 200
+{
+  "ok": true,
+  "action": "update",
+  "id": 42
+}</code></pre>
+<div class="callout warn"><strong>Aktueller Stand:</strong> Die API liefert <code>version_no</code> beim Laden und erhöht es beim Update, prüft jedoch noch keine vom Client mitgesendete Versionsnummer. Ein vollständiger Schutz vor parallelem Überschreiben ist deshalb vorbereitet, aber noch nicht aktiv.</div>
+</section>
+
+<section id="delete" class="section anchor">
+<h2>9. Aktion <code>delete</code></h2>
+<p>Deaktiviert einen Termin. Der Datensatz wird nicht physisch aus der Datenbank entfernt.</p>
+<h3>9.1 Request</h3>
+<pre><code>{
+  "action": "delete",
+  "id": 42
+}</code></pre>
+<h3>9.2 Datenbankwirkung</h3>
+<pre><code>UPDATE events
+SET activ = 0,
+    version_no = version_no + 1,
+    updated_by = :user
+WHERE id = :id AND activ = 1</code></pre>
+<h3>9.3 Response</h3>
+<pre><code>{
+  "ok": true,
+  "action": "delete",
+  "id": 42
+}</code></pre>
+<div class="callout ok"><strong>Vorteil des Soft Delete:</strong> Historische Zuordnungen bleiben erhalten. Eine spätere Wiederherstellungs- oder Archivfunktion kann darauf aufbauen.</div>
+</section>
+
+<section id="datenmodell" class="section anchor">
+<h2>10. Event-Datenmodell</h2>
+<table><thead><tr><th>API-Feld</th><th>Typ</th><th>Pflicht bei create/update</th><th>Beschreibung</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>Integer</td><td>nur update/delete</td><td>Primärschlüssel des Events.</td></tr>
+<tr><td><code>to_role</code></td><td>Integer</td><td>nein</td><td>Rollen-ID des primären Teilnehmers; Standard 3.</td></tr>
+<tr><td><code>to_tutor</code></td><td>Integer</td><td>nein</td><td>Personen-ID des primären Tutors; 0 bedeutet keine Zuordnung.</td></tr>
+<tr><td><code>to_student</code></td><td>Integer</td><td>nein</td><td>Personen-ID des primären Teilnehmers; 0 bedeutet keine Zuordnung.</td></tr>
+<tr><td><code>start</code></td><td>String</td><td>ja</td><td>Lokale Datumszeit im Format YYYY-MM-DDTHH:MM:SS.</td></tr>
+<tr><td><code>end</code></td><td>String</td><td>ja</td><td>Lokale Datumszeit; muss nach start liegen.</td></tr>
+<tr><td><code>activ</code></td><td>Boolean</td><td>nein</td><td>Aktivstatus; fehlend oder false wird als 0 gespeichert.</td></tr>
+<tr><td><code>thema</code></td><td>String</td><td>nein</td><td>Titel/Thema, maximal 255 Zeichen.</td></tr>
+<tr><td><code>description</code></td><td>String</td><td>nein</td><td>Ausführliche Beschreibung.</td></tr>
+<tr><td><code>appendizies</code></td><td>Array&lt;String&gt;</td><td>nein</td><td>Liste von Dateinamen; historische Feldbezeichnung des Frontends.</td></tr>
+<tr><td><code>version_no</code></td><td>Integer</td><td>nur Response</td><td>Versionszähler des Datensatzes.</td></tr>
+</tbody></table>
+<h3>10.1 Normalisierte Zuordnung</h3>
+<pre><code>events (1) ────── (n) event_participants (n) ────── (1) persons
+                          │
+                          └────────────────────────── (1) roles
+
+events (1) ────── (n) event_attachments</code></pre>
+<p>Das API-Format bleibt aus Kompatibilitätsgründen flach, während die Datenbank mehrere Personen und Rollen pro Termin unterstützen kann.</p>
+</section>
+
+<section id="fehler" class="section anchor">
+<h2>11. Fehlercodes und Fehlerbehandlung</h2>
+<table><thead><tr><th>HTTP</th><th>Ursache</th><th>Beispiel</th></tr></thead><tbody>
+<tr><td>200</td><td>Erfolgreiche list-, update- oder delete-Aktion</td><td><code>{"ok":true}</code></td></tr>
+<tr><td>201</td><td>Termin erfolgreich angelegt</td><td><code>action=create</code></td></tr>
+<tr><td>400</td><td>Ungültige Action, Felder oder Datumsformate</td><td><code>start ist ungültig.</code></td></tr>
+<tr><td>403</td><td>CSRF-Token fehlt oder ist ungültig</td><td>Sitzung abgelaufen</td></tr>
+<tr><td>404</td><td>Termin-ID existiert nicht</td><td><code>Termin nicht gefunden.</code></td></tr>
+<tr><td>405</td><td>Andere HTTP-Methode als POST</td><td>GET-Aufruf des Handlers</td></tr>
+<tr><td>409</td><td>Laufzeit-/Konfliktfehler</td><td>Transaktions- oder Zustandskonflikt</td></tr>
+<tr><td>500</td><td>Unerwarteter PHP- oder Datenbankfehler</td><td>Details nur im PHP-Fehlerprotokoll</td></tr>
+</tbody></table>
+<h3>11.1 JavaScript-Behandlung</h3>
+<pre><code>try {
+  const result = await nj.post(url, payload, options);
+  // Erfolg verarbeiten
+} catch (error) {
+  console.error(error.status, error.message, error.response);
+  // Benutzerfreundliche Meldung anzeigen
+}</code></pre>
+<div class="callout danger"><strong>Keine internen Details im Browser:</strong> Unerwartete Exceptions werden serverseitig mit <code>error_log()</code> protokolliert. Der Client erhält nur eine neutrale Fehlermeldung.</div>
+</section>
+
+<section id="sicherheit" class="section anchor">
+<h2>12. Sicherheit</h2>
+<h3>12.1 Bereits umgesetzt</h3>
+<ul><li>CSRF-Schutz mit zufälligem Session-Token und <code>hash_equals()</code></li><li>Ausschließlich POST am zentralen Handler</li><li>JSON-Body statt gemischter Formulardaten</li><li>PDO Prepared Statements</li><li>Deaktivierte emulierte Prepared Statements</li><li>Transaktionen bei create und update</li><li>Serverseitige Datums- und ID-Validierung</li><li>Keine Ausgabe interner Exception-Details an den Client</li><li><code>Cache-Control: no-store</code></li></ul>
+<h3>12.2 Noch zu ergänzen</h3>
+<ul><li>Login- und Rollenprüfung je Action</li><li>Ersetzung von <code>default_user_id</code> durch die angemeldete Benutzer-ID</li><li>Prüfung, ob Tutor, Student und Rolle tatsächlich existieren und aktiv sind</li><li>Aktive optimistische Sperre über <code>version_no</code></li><li>Rate Limiting beziehungsweise Missbrauchsschutz</li><li>Strenge Upload-Prüfung für zukünftige echte Dateiuploads</li><li>Audit-Log-Einträge für create, update und delete</li></ul>
+</section>
+
+<section id="frontend" class="section anchor">
+<h2>13. Frontend-Integration</h2>
+<h3>13.1 Globale Konfiguration aus index.php</h3>
+<pre><code>window.easyITCalendarHandler = "api/calendar_handler.php";
+window.easyITCalendarCsrf = "...";</code></pre>
+<h3>13.2 Termine laden</h3>
+<pre><code>async function loadEvents(start, end) {
+  const result = await nj.post(
+    window.easyITCalendarHandler,
+    { action: 'list', start, end },
+    { headers: { 'X-CSRF-Token': window.easyITCalendarCsrf } }
+  );
+  return result.events;
+}</code></pre>
+<h3>13.3 Termin speichern</h3>
+<pre><code>async function saveEvent(event) {
+  const action = event.id ? 'update' : 'create';
+  return nj.post(
+    window.easyITCalendarHandler,
+    Object.assign({ action }, event),
+    { headers: { 'X-CSRF-Token': window.easyITCalendarCsrf } }
+  );
+}</code></pre>
+<h3>13.4 Termin löschen</h3>
+<pre><code>async function removeEvent(id) {
+  return nj.post(
+    window.easyITCalendarHandler,
+    { action: 'delete', id },
+    { headers: { 'X-CSRF-Token': window.easyITCalendarCsrf } }
+  );
+}</code></pre>
+<h3>13.5 Blättern</h3>
+<p>Bei jedem Wechsel von Tag, Woche oder Monat berechnet das Frontend den sichtbaren Zeitraum und ruft anschließend <code>list</code> neu auf. Die API überträgt dadurch nur die erforderlichen Termine.</p>
+</section>
+
+<section id="erweiterung" class="section anchor">
+<h2>14. Erweiterung des zentralen Handlers</h2>
+<p>Neue Funktionen werden durch zusätzliche Action-Werte ergänzt. Empfohlen ist eine fachliche Namensstruktur, beispielsweise:</p>
+<pre><code>persons.list
+roles.list
+contacts.list
+blocks.list
+blocks.create
+blocks.delete
+attachments.upload
+settings.load
+settings.save</code></pre>
+<h3>14.1 Beispiel: neue Action registrieren</h3>
+<pre><code>switch ($action) {
+    case 'list':
+        list_events($pdo, $input);
+        break;
+    case 'persons.list':
+        list_persons($pdo, $input);
+        break;
+    default:
+        throw new InvalidArgumentException('Unbekannte Aktion.');
+}</code></pre>
+<h3>14.2 Beispiel: Antwortfunktion</h3>
+<pre><code>function list_persons(PDO $pdo, array $input): never
+{
+    $stmt = $pdo-&gt;query(
+        'SELECT id, firstname, lastname FROM persons WHERE activ = 1 ORDER BY lastname, firstname'
+    );
+    json_response([
+        'ok' =&gt; true,
+        'action' =&gt; 'persons.list',
+        'persons' =&gt; $stmt-&gt;fetchAll()
+    ]);
+}</code></pre>
+<div class="callout"><strong>Empfehlung:</strong> Wenn der Handler weiter wächst, sollte jede Fachdomäne in eine eigene Handlerklasse oder Service-Datei ausgelagert werden, während <code>calendar_handler.php</code> nur Routing, Authentifizierung und Antwortformat übernimmt.</div>
+</section>
+
+<section id="tests" class="section anchor">
+<h2>15. Testbeispiele</h2>
+<h3>15.1 Test im Browser</h3>
+<pre><code>await nj.post(
+  window.easyITCalendarHandler,
+  { action: 'list', start: '2026-07-01', end: '2026-08-01' },
+  { headers: { 'X-CSRF-Token': window.easyITCalendarCsrf } }
+);</code></pre>
+<h3>15.2 Test mit curl</h3>
+<p>Da die API sowohl eine Session als auch ein passendes CSRF-Token verlangt, muss zuerst <code>index.php</code> geladen und das Token aus der Seite übernommen werden. Beispielhaft:</p>
+<pre><code>curl -c cookies.txt http://localhost/easyIT_Calendar/index.php
+
+curl -b cookies.txt \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -H "X-CSRF-Token: HIER_TOKEN_EINSETZEN" \
+  --data '{"action":"list","start":"2026-07-01","end":"2026-08-01"}' \
+  http://localhost/easyIT_Calendar/api/calendar_handler.php</code></pre>
+<h3>15.3 Prüfliste</h3>
+<table><thead><tr><th>Test</th><th>Erwartetes Ergebnis</th></tr></thead><tbody>
+<tr><td>Kalenderstart</td><td>Termine des sichtbaren Zeitraums werden geladen.</td></tr>
+<tr><td>Nächste/vorherige Woche</td><td>Neuer list-Aufruf mit verändertem Datumsbereich.</td></tr>
+<tr><td>Termin anlegen</td><td>HTTP 201, neue ID, Event erscheint nach Neuladen.</td></tr>
+<tr><td>Termin bearbeiten</td><td>HTTP 200, version_no steigt.</td></tr>
+<tr><td>Drag-and-drop</td><td>Start und Ende werden per update gespeichert.</td></tr>
+<tr><td>Termin löschen</td><td>activ wird 0; Termin erscheint nicht mehr in list.</td></tr>
+<tr><td>Ungültiger Token</td><td>HTTP 403.</td></tr>
+<tr><td>GET auf Handler</td><td>HTTP 405.</td></tr>
+<tr><td>Ende vor Beginn</td><td>HTTP 400.</td></tr>
+</tbody></table>
+</section>
+
+<section id="grenzen" class="section anchor">
+<h2>16. Aktuelle Grenzen und empfohlene nächste Schritte</h2>
+<ol>
+<li><strong>Echte Mehrfachteilnehmer:</strong> Die Datenbank kann mehrere Teilnehmer, das aktuelle Frontend-/API-Kompatibilitätsformat zeigt jedoch nur primäre Tutor- und Student-IDs.</li>
+<li><strong>Anlagen:</strong> Der Handler speichert derzeit nur Dateinamen und berechnete Pfade. Binärdateien werden noch nicht hochgeladen.</li>
+<li><strong>Optimistische Sperre:</strong> <code>version_no</code> wird erhöht, aber noch nicht als Update-Bedingung geprüft.</li>
+<li><strong>Benutzer und Rechte:</strong> CRUD-Aktionen sind CSRF-geschützt, aber noch nicht rollenbasiert autorisiert.</li>
+<li><strong>Referenzprüfung:</strong> Personen- und Rollen-IDs sollten vor dem Speichern gegen aktive Datensätze geprüft werden.</li>
+<li><strong>Blockierte Bereiche:</strong> Die Frontendfunktion sollte als eigene API-Domäne <code>blocks.*</code> mit DB-Persistenz ergänzt werden.</li>
+<li><strong>Auswahllisten:</strong> Numerische Eingabefelder sollten durch datenbankgestützte Rollen-, Tutor- und Teilnehmer-Selects ersetzt werden.</li>
+</ol>
+<div class="callout ok"><strong>Empfohlene Ausbaureihenfolge:</strong> zuerst Rollen/Personen-API und Selectfelder, danach Blockierungen, anschließend echter Datei-Upload, Authentifizierung/Rechte und zuletzt Audit-Log sowie optimistische Sperre.</div>
+</section>
+</main>
+<footer class="footer">easyITCalendar – API-Dokumentation · Stand 26.07.2026 · Bezieht sich auf <code>calendar_handler.php</code> mit den Aktionen list, create, update und delete.</footer>
+</div>
+</div>
+</body>
+</html>

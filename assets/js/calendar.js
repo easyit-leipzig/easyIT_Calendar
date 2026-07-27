@@ -22,7 +22,8 @@
     weekStart: getMonday(new Date()),
     dayDate: new Date(),
     monthDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    lessons: loadLessons(),
+    lessons: [],
+    loadingEvents: false,
     completionEvents: loadCompletionEvents(),
     blockedSlots: loadBlockedSlots(),
     draggedLessonId: null,
@@ -47,6 +48,7 @@
     applyInitConfiguration();
     bindControls();
     render();
+    loadVisibleEvents();
     document.dispatchEvent(new CustomEvent('tinycalendar:initialized', { detail: { config: CONFIG } }));
   });
 
@@ -76,7 +78,7 @@
       state.weekStart = getMonday(now);
       state.dayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       state.monthDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      render();
+      loadVisibleEvents();
     });
     nj('#dayView').on('click', function () { setView('day'); });
     nj('#weekView').on('click', function () { setView('week'); });
@@ -258,6 +260,7 @@
     }
     state.view = view;
     render();
+    loadVisibleEvents();
     const messages = {
       day: 'Tagesansicht: alle Funktionen der Wochenansicht stehen für den gewählten Tag zur Verfügung.',
       week: 'Wochenansicht: Termine können verschoben und Zeitbereiche blockiert werden.',
@@ -271,6 +274,7 @@
     else if (state.view === 'day') state.dayDate = addDays(state.dayDate, direction);
     else state.weekStart = addDays(state.weekStart, direction * 7);
     render();
+    loadVisibleEvents();
   }
 
   function updateViewControls() {
@@ -477,7 +481,7 @@
   function handleDragEnd() { this.classList.remove('dragging'); this.setAttribute('aria-grabbed', 'false'); clearDropTargets(); state.draggedLessonId = null; state.dragGrabOffsetX = 0; state.activeDropSlot = null; }
   function clearDropTargets() { els.grid.get().querySelectorAll('.slot.drop-target').forEach(function (slot) { slot.classList.remove('drop-target'); }); }
 
-  function moveLessonToSlot(id, targetDate, targetStart) {
+  async function moveLessonToSlot(id, targetDate, targetStart) {
     if (!(hasFeature('drag_drop') && hasRight('lesson_move'))) return deny('Termine dürfen nicht verschoben werden.');
     if (isSlotBlocked(targetDate, targetStart)) { setStatus('Der Zielzeitraum ist blockiert und kann nicht belegt werden.', 'error'); state.draggedLessonId = null; return; }
     const index = state.lessons.findIndex(function (item) { return item.id === id; }); if (index < 0) return;
@@ -486,10 +490,19 @@
     if (datetimeDate(newEnd) !== targetDate) { setStatus('Der Termin kann nicht über Mitternacht hinaus verschoben werden.', 'error'); state.draggedLessonId = null; return; }
     const updated = Object.assign({}, oldValue, { start: newStart, end: newEnd });
     const error = validateLesson(updated); if (error) { setStatus(error, 'error'); state.draggedLessonId = null; return; }
-    state.lessons[index] = updated; persist(); const completion = createMoveCompletionEvent(oldValue, updated);
-    state.suppressLessonClickUntil = Date.now() + 350; state.draggedLessonId = null; render();
-    setStatus(`Termin ${updated.id} verschoben: ${formatISODate(targetDate)}, ${datetimeTime(updated.start)}–${datetimeTime(updated.end)}.`, 'success');
-    dispatchMoveCompleted(completion);
+    try {
+      setStatus('Termin wird verschoben …', 'info');
+      await apiRequest('PUT', updated);
+      state.lessons[index] = updated;
+      const completion = createMoveCompletionEvent(oldValue, updated);
+      state.suppressLessonClickUntil = Date.now() + 350; state.draggedLessonId = null; render();
+      setStatus(`Termin ${updated.id} verschoben: ${formatISODate(targetDate)}, ${datetimeTime(updated.start)}–${datetimeTime(updated.end)}.`, 'success');
+      dispatchMoveCompleted(completion);
+    } catch (error) {
+      state.draggedLessonId = null;
+      setStatus(error.message, 'error');
+      render();
+    }
   }
 
   function createMoveCompletionEvent(oldLesson, newLesson) {
@@ -525,24 +538,28 @@
     els.deleteButton.prop('hidden', false); els.dialog.showModal();
   }
 
-  function saveLessonFromForm(event) {
+  async function saveLessonFromForm(event) {
     event.preventDefault();
     const existingId = Number(els.id.val());
-    if (Number.isInteger(existingId) ? !hasRight('lesson_edit') : !hasRight('lesson_create')) return deny('Für das Speichern dieses Termins fehlt die Berechtigung.'); els.error.text(''); const date = els.date.val();
+    if (Number.isInteger(existingId) ? !hasRight('lesson_edit') : !hasRight('lesson_create')) return deny('Für das Speichern dieses Termins fehlt die Berechtigung.');
+    els.error.text(''); const date = els.date.val();
     const lesson = normalizeLesson({
-      id: els.id.val() ? Number(els.id.val()) : nextLessonId(), to_role: Number(els.toRole.val()),
+      id: els.id.val() ? Number(els.id.val()) : 0, to_role: Number(els.toRole.val()),
       to_tutor: Number(els.toTutor.val()), to_student: Number(els.toStudent.val()),
       start: `${date}T${normalizeHalfHour(els.start.val())}:00`, end: `${date}T${normalizeHalfHour(els.end.val())}:00`,
       activ: Boolean(els.activ.get().checked), thema: String(els.thema.val() || '').trim(),
       description: String(els.description.val() || '').trim(), appendizies: parseFilenames(els.appendizies.val())
     });
+    if (!existingId) lesson.id = 1;
     const error = validateLesson(lesson); if (error) { els.error.text(error); return; }
-    const index = state.lessons.findIndex(function (item) { return item.id === lesson.id; });
-    if (index >= 0) state.lessons[index] = lesson; else {
-      if (state.lessons.some(function (item) { return item.id === lesson.id; })) { els.error.text('Diese Termin-ID ist bereits vergeben.'); return; }
-      state.lessons.push(lesson);
+    try {
+      const result = await apiRequest(existingId ? 'PUT' : 'POST', Object.assign({}, lesson, existingId ? { id: existingId } : {}));
+      els.dialog.close();
+      await loadVisibleEvents();
+      setStatus(`Termin ${result.id} wurde ${existingId ? 'aktualisiert' : 'angelegt'}.`, 'success');
+    } catch (error) {
+      els.error.text(error.message);
     }
-    persist(); els.dialog.close(); render();
   }
 
   function validateLesson(lesson) {
@@ -556,17 +573,59 @@
     return '';
   }
 
-  function deleteCurrentLesson() { if (!hasRight('lesson_delete')) return deny('Sie dürfen keine Termine löschen.'); const id = Number(els.id.val()); if (!Number.isInteger(id)) return; state.lessons = state.lessons.filter(function (item) { return item.id !== id; }); persist(); els.dialog.close(); render(); }
+  async function deleteCurrentLesson() {
+    if (!hasRight('lesson_delete')) return deny('Sie dürfen keine Termine löschen.');
+    const id = Number(els.id.val()); if (!Number.isInteger(id)) return;
+    if (!global.confirm('Termin wirklich deaktivieren?')) return;
+    try {
+      await apiRequest('DELETE', { id });
+      els.dialog.close();
+      await loadVisibleEvents();
+      setStatus(`Termin ${id} wurde deaktiviert.`, 'success');
+    } catch (error) { els.error.text(error.message); }
+  }
   function clearForm() { els.form.get().reset(); els.id.val(''); els.error.text(''); els.appendizies.val(''); }
 
-  function loadLessons() {
-    let raw = [];
+  function visibleRange() {
+    if (state.view === 'month') {
+      const first = new Date(state.monthDate.getFullYear(), state.monthDate.getMonth(), 1);
+      const next = new Date(state.monthDate.getFullYear(), state.monthDate.getMonth() + 1, 1);
+      return { start: toISODate(first), end: toISODate(next) };
+    }
+    const first = visibleStartDate();
+    return { start: toISODate(first), end: toISODate(addDays(first, visibleDayCount())) };
+  }
+
+  async function loadVisibleEvents() {
+    if (!hasRight('lesson_read')) { state.lessons = []; render(); return; }
+    const range = visibleRange();
+    state.loadingEvents = true;
+    setStatus('Termine werden aus der Datenbank geladen …', 'info');
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      raw = stored ? JSON.parse(stored) : JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || '[]');
-    } catch (error) { console.warn('Gespeicherte Termine konnten nicht geladen werden.', error); }
-    const migrated = (Array.isArray(raw) ? raw : []).map(migrateLesson).filter(Boolean);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated)); return migrated;
+      const data = await nj.post(global.easyITCalendarHandler, {
+        action: 'list',
+        start: range.start,
+        end: range.end
+      }, {
+        headers: { 'X-CSRF-Token': global.easyITCalendarCsrf || '' }
+      });
+      state.lessons = (Array.isArray(data.events) ? data.events : []).map(normalizeLesson);
+      render();
+      setStatus(`${state.lessons.length} Termin(e) aus der Datenbank geladen.`, 'success');
+    } catch (error) {
+      state.lessons = [];
+      render();
+      setStatus(`Termine konnten nicht geladen werden: ${error.message}`, 'error');
+    } finally { state.loadingEvents = false; }
+  }
+
+  async function apiRequest(method, payload) {
+    const actionMap = { POST: 'create', PUT: 'update', DELETE: 'delete' };
+    const action = actionMap[String(method || '').toUpperCase()];
+    if (!action) throw new Error(`Nicht unterstützte Kalenderaktion: ${method}`);
+    return nj.post(global.easyITCalendarHandler, Object.assign({ action }, payload || {}), {
+      headers: { 'X-CSRF-Token': global.easyITCalendarCsrf || '' }
+    });
   }
 
   function migrateLesson(item, index) {
@@ -588,7 +647,8 @@
       id: Number(item.id), to_role: Number(item.to_role), to_tutor: Number(item.to_tutor), to_student: Number(item.to_student),
       start: normalizeDatetime(item.start), end: normalizeDatetime(item.end), activ: Boolean(item.activ),
       thema: String(item.thema || ''), description: String(item.description || ''),
-      appendizies: Array.isArray(item.appendizies) ? item.appendizies.map(String).map(function (v) { return v.trim(); }).filter(Boolean) : []
+      appendizies: Array.isArray(item.appendizies) ? item.appendizies.map(String).map(function (v) { return v.trim(); }).filter(Boolean) : [],
+      version_no: Number(item.version_no || 1)
     };
   }
 
@@ -634,7 +694,7 @@
   function persistBlockedSlots() { localStorage.setItem(BLOCK_STORAGE_KEY, JSON.stringify(state.blockedSlots)); }
 
   function loadCompletionEvents() { try { const value = JSON.parse(localStorage.getItem(COMPLETION_STORAGE_KEY) || '[]'); return Array.isArray(value) ? value : []; } catch (error) { return []; } }
-  function persist() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.lessons)); }
+  function persist() { /* Termine werden serverseitig gespeichert. */ }
   function persistCompletionEvents() { localStorage.setItem(COMPLETION_STORAGE_KEY, JSON.stringify(state.completionEvents)); }
   function nextLessonId() { return state.lessons.reduce(function (max, item) { return Math.max(max, item.id); }, 0) + 1; }
   function nextCompletionId() { return state.completionEvents.reduce(function (max, item) { return Math.max(max, Number(item.id) || 0); }, 0) + 1; }
@@ -668,7 +728,7 @@
       const error = normalized.map(validateLesson).find(Boolean); if (error) throw new TypeError(error);
       const ids = normalized.map(function (item) { return item.id; });
       if (new Set(ids).size !== ids.length) throw new TypeError('Termin-IDs müssen eindeutig sein.');
-      state.lessons = normalized; persist(); render();
+      state.lessons = normalized; render();
     },
     getCompletionEvents: function () { return state.completionEvents.map(function (item) { return Object.assign({}, item); }); },
     clearCompletionEvents: function () { state.completionEvents = []; persistCompletionEvents(); },
